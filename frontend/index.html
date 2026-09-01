@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DishIt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="banner">
+  <strong>Wireframe</strong> — sample data, fictional restaurants. Palette is not final; switch it bottom-right.
+</div>
+
+<header class="head">
+  <div class="head-in">
+    <a class="logo" href="#" id="home-link"><span class="logo-mark"></span>DishIt</a>
+
+    <form class="search head-search" id="head-search" hidden>
+      <input type="search" id="head-q" placeholder="Search dishes, restaurants, cuisines" aria-label="Search">
+      <button type="submit">Search</button>
+    </form>
+
+    <div class="loc">
+      <span class="loc-dot"></span>
+      <span id="loc-name">Morningside Heights</span>
+      <button type="button" id="loc-btn">Change</button>
+    </div>
+  </div>
+</header>
+
+<main id="view"></main>
+
+<footer class="foot">
+  <div class="wrap">
+    DishIt · dish-level sentiment from critic coverage, Reddit, and review text · ENGI 4503 group project
+  </div>
+</footer>
+
+<div id="modal-root"></div>
+
+<div class="pal">
+  <div class="pal-row">
+    <span class="pal-lab">Palette</span>
+    <button class="sw sw-saffron"    data-pal="saffron"    aria-pressed="true"  aria-label="Saffron palette"></button>
+    <button class="sw sw-terracotta" data-pal="terracotta" aria-pressed="false" aria-label="Terracotta palette"></button>
+    <button class="sw sw-charcoal"   data-pal="charcoal"   aria-pressed="false" aria-label="Charcoal palette"></button>
+    <button class="sw sw-wine"       data-pal="wine"       aria-pressed="false" aria-label="Wine palette"></button>
+  </div>
+  <div class="pal-row">
+    <span class="pal-name" id="pal-name">Saffron</span>
+    <button class="pal-theme" id="theme-btn" style="margin-left:auto">Dark</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

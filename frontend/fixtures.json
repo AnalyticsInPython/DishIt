@@ -1,0 +1,85 @@
+{
+  "_comment": "Sample data for frontend development. Restaurants are FICTIONAL so that no fabricated review text is attached to a real business. Shapes here match specs/api-contract.md exactly — swap this file for live /api/* calls without touching render code.",
+  "_threshold": 5,
+
+  "restaurants": [
+    { "id": "r1", "name": "Osteria Novanta",    "neighborhood": "Manhattan Valley",   "cuisine": "Italian",      "cross_street": "108th & Amsterdam", "lat": 40.8009, "lng": -73.9648, "distance_m": 420,  "image": null },
+    { "id": "r2", "name": "Amsterdam Larder",   "neighborhood": "Upper West Side",    "cuisine": "New American", "cross_street": "97th & Amsterdam",  "lat": 40.7947, "lng": -73.9689, "distance_m": 850,  "image": null },
+    { "id": "r3", "name": "Sable & Rye",        "neighborhood": "Morningside Heights","cuisine": "Appetizing",   "cross_street": "110th & Broadway",  "lat": 40.8028, "lng": -73.9662, "distance_m": 260,  "image": null },
+    { "id": "r4", "name": "Han & Sons",         "neighborhood": "Upper West Side",    "cuisine": "Korean",       "cross_street": "103rd & Columbus",  "lat": 40.7981, "lng": -73.9646, "distance_m": 610,  "image": null },
+    { "id": "r5", "name": "La Buena Mesa",      "neighborhood": "Manhattan Valley",   "cuisine": "Mexican",      "cross_street": "106th & Columbus",  "lat": 40.8000, "lng": -73.9615, "distance_m": 540,  "image": null },
+    { "id": "r6", "name": "Trattoria Bellonda", "neighborhood": "Upper West Side",    "cuisine": "Italian",      "cross_street": "95th & Columbus",   "lat": 40.7930, "lng": -73.9700, "distance_m": 1100, "image": null },
+    { "id": "r7", "name": "Amsterdam Pasta Bar","neighborhood": "Upper West Side",    "cuisine": "Italian",      "cross_street": "100th & Amsterdam", "lat": 40.7965, "lng": -73.9673, "distance_m": 700,  "image": null }
+  ],
+
+  "dishes": [
+    { "id": "d1",  "name": "Cacio e Pepe",        "restaurant_id": "r1", "sentiment": { "label": "positive", "score": 82, "positive": 19, "negative": 3,  "neutral": 1 }, "mention_count": 23, "is_controversial": false, "source_mix": { "critic": 4, "public": 19 }, "on_current_menu": true },
+    { "id": "d7",  "name": "Duck Lasagna",        "restaurant_id": "r1", "sentiment": { "label": "positive", "score": 94, "positive": 27, "negative": 1,  "neutral": 1 }, "mention_count": 29, "is_controversial": false, "source_mix": { "critic": 6, "public": 23 }, "on_current_menu": true },
+    { "id": "d15", "name": "Garlic Knots",        "restaurant_id": "r1", "sentiment": { "label": "mixed",    "score": 45, "positive": 7,  "negative": 9,  "neutral": 1 }, "mention_count": 17, "is_controversial": true,  "source_mix": { "critic": 1, "public": 16 }, "on_current_menu": true },
+    { "id": "d17", "name": "Chicken Parm",        "restaurant_id": "r1", "sentiment": { "label": "positive", "score": 74, "positive": 3,  "negative": 1,  "neutral": 0 }, "mention_count": 4,  "is_controversial": false, "source_mix": { "critic": 0, "public": 4  }, "on_current_menu": true },
+
+    { "id": "d2",  "name": "Sardine Toast",       "restaurant_id": "r2", "sentiment": { "label": "mixed",    "score": 51, "positive": 16, "negative": 14, "neutral": 1 }, "mention_count": 31, "is_controversial": true,  "source_mix": { "critic": 3, "public": 28 }, "on_current_menu": true },
+    { "id": "d9",  "name": "Charred Octopus",     "restaurant_id": "r2", "sentiment": { "label": "positive", "score": 71, "positive": 10, "negative": 4,  "neutral": 0 }, "mention_count": 14, "is_controversial": false, "source_mix": { "critic": 2, "public": 12 }, "on_current_menu": true },
+    { "id": "d18", "name": "Burnt Honey Sundae",  "restaurant_id": "r2", "sentiment": { "label": "positive", "score": 90, "positive": 18, "negative": 2,  "neutral": 0 }, "mention_count": 20, "is_controversial": false, "source_mix": { "critic": 2, "public": 18 }, "on_current_menu": false },
+
+    { "id": "d3",  "name": "Whitefish Salad",     "restaurant_id": "r3", "sentiment": { "label": "positive", "score": 91, "positive": 40, "negative": 3,  "neutral": 1 }, "mention_count": 44, "is_controversial": false, "source_mix": { "critic": 5, "public": 39 }, "on_current_menu": true },
+    { "id": "d14", "name": "Lox Platter",         "restaurant_id": "r3", "sentiment": { "label": "positive", "score": 86, "positive": 21, "negative": 3,  "neutral": 1 }, "mention_count": 25, "is_controversial": false, "source_mix": { "critic": 4, "public": 21 }, "on_current_menu": true },
+    { "id": "d8",  "name": "Everything Bagel",    "restaurant_id": "r3", "sentiment": { "label": "positive", "score": 67, "positive": 2,  "negative": 1,  "neutral": 0 }, "mention_count": 3,  "is_controversial": false, "source_mix": { "critic": 0, "public": 3  }, "on_current_menu": true },
+
+    { "id": "d4",  "name": "Army Stew",           "restaurant_id": "r4", "sentiment": { "label": "positive", "score": 88, "positive": 24, "negative": 2,  "neutral": 1 }, "mention_count": 27, "is_controversial": false, "source_mix": { "critic": 2, "public": 25 }, "on_current_menu": true },
+    { "id": "d10", "name": "Kimchi Pancake",      "restaurant_id": "r4", "sentiment": { "label": "mixed",    "score": 62, "positive": 7,  "negative": 4,  "neutral": 1 }, "mention_count": 12, "is_controversial": false, "source_mix": { "critic": 1, "public": 11 }, "on_current_menu": true },
+    { "id": "d19", "name": "Soy Garlic Wings",    "restaurant_id": "r4", "sentiment": { "label": "positive", "score": 93, "positive": 30, "negative": 2,  "neutral": 0 }, "mention_count": 32, "is_controversial": false, "source_mix": { "critic": 1, "public": 31 }, "on_current_menu": true },
+
+    { "id": "d5",  "name": "Birria Tacos",        "restaurant_id": "r5", "sentiment": { "label": "positive", "score": 76, "positive": 27, "negative": 7,  "neutral": 1 }, "mention_count": 35, "is_controversial": false, "source_mix": { "critic": 3, "public": 32 }, "on_current_menu": true },
+    { "id": "d11", "name": "Al Pastor Tacos",     "restaurant_id": "r5", "sentiment": { "label": "positive", "score": 84, "positive": 18, "negative": 3,  "neutral": 0 }, "mention_count": 21, "is_controversial": false, "source_mix": { "critic": 2, "public": 19 }, "on_current_menu": true },
+    { "id": "d13", "name": "Tres Leches",         "restaurant_id": "r5", "sentiment": { "label": "mixed",    "score": 58, "positive": 11, "negative": 8,  "neutral": 0 }, "mention_count": 19, "is_controversial": true,  "source_mix": { "critic": 1, "public": 18 }, "on_current_menu": true },
+
+    { "id": "d6",  "name": "Cacio e Pepe",        "restaurant_id": "r6", "sentiment": { "label": "mixed",    "score": 67, "positive": 12, "negative": 5,  "neutral": 1 }, "mention_count": 18, "is_controversial": false, "source_mix": { "critic": 2, "public": 16 }, "on_current_menu": true },
+    { "id": "d12", "name": "Carbonara",           "restaurant_id": "r6", "sentiment": { "label": "positive", "score": 79, "positive": 13, "negative": 3,  "neutral": 0 }, "mention_count": 16, "is_controversial": false, "source_mix": { "critic": 2, "public": 14 }, "on_current_menu": true },
+
+    { "id": "d16", "name": "Cacio e Pepe",        "restaurant_id": "r7", "sentiment": { "label": "positive", "score": 88, "positive": 23, "negative": 2,  "neutral": 1 }, "mention_count": 26, "is_controversial": false, "source_mix": { "critic": 3, "public": 23 }, "on_current_menu": true },
+    { "id": "d20", "name": "Bucatini all'Amatriciana", "restaurant_id": "r7", "sentiment": { "label": "positive", "score": 81, "positive": 17, "negative": 4, "neutral": 0 }, "mention_count": 21, "is_controversial": false, "source_mix": { "critic": 2, "public": 19 }, "on_current_menu": true }
+  ],
+
+  "quotes": {
+    "d1": [
+      { "text": "The pepper actually bites. Most places in this neighborhood serve you buttered noodles and call it cacio e pepe.", "source_type": "reddit",  "source_label": "r/UpperWestSide", "sentiment": "positive" },
+      { "text": "Emulsified properly, which sounds like a low bar until you have had the version down the block.",                  "source_type": "critic",  "source_label": "Neighborhood critic", "sentiment": "positive" },
+      { "text": "Good but a little under-seasoned the night we went.",                                                             "source_type": "google",  "source_label": "Google review", "sentiment": "negative" }
+    ],
+    "d2": [
+      { "text": "Genuinely the best thing I ate all month. The fish is oily and aggressive and I mean that as praise.",            "source_type": "reddit",  "source_label": "r/AskNYC", "sentiment": "positive" },
+      { "text": "I cannot understand the hype. It is a piece of toast with a tinned fish on it for nineteen dollars.",             "source_type": "reddit",  "source_label": "r/UpperWestSide", "sentiment": "negative" },
+      { "text": "Divisive by design, and the kitchen knows it.",                                                                   "source_type": "critic",  "source_label": "Neighborhood critic", "sentiment": "positive" },
+      { "text": "Way too salty. Sent it back.",                                                                                    "source_type": "google",  "source_label": "Google review", "sentiment": "negative" }
+    ],
+    "d3": [
+      { "text": "Smoked, not sweet. This is the one thing you order here even if you order nothing else.",                         "source_type": "critic",  "source_label": "Neighborhood critic", "sentiment": "positive" },
+      { "text": "My grandmother would have approved and she approved of almost nothing.",                                          "source_type": "reddit",  "source_label": "r/UpperWestSide", "sentiment": "positive" },
+      { "text": "Consistent every single time for three years.",                                                                   "source_type": "google",  "source_label": "Google review", "sentiment": "positive" }
+    ],
+    "d5": [
+      { "text": "The consomme is the entire point and they give you enough of it.",                                                "source_type": "reddit",  "source_label": "r/AskNYC", "sentiment": "positive" },
+      { "text": "Greasy in the good way. Order two more than you think you need.",                                                 "source_type": "google",  "source_label": "Google review", "sentiment": "positive" },
+      { "text": "Fine, but I have had better for half the price further uptown.",                                                  "source_type": "reddit",  "source_label": "r/UpperWestSide", "sentiment": "negative" }
+    ],
+    "d7": [
+      { "text": "Rich enough that a half portion is the correct order, and they will let you do that.",                            "source_type": "critic",  "source_label": "Neighborhood critic", "sentiment": "positive" },
+      { "text": "I think about this lasagna at work.",                                                                             "source_type": "reddit",  "source_label": "r/UpperWestSide", "sentiment": "positive" }
+    ],
+    "d13": [
+      { "text": "Soaked all the way through, which is either the point or the problem depending on who you ask.",                  "source_type": "critic",  "source_label": "Neighborhood critic", "sentiment": "positive" },
+      { "text": "Swimming. I could not finish it.",                                                                               "source_type": "google",  "source_label": "Google review", "sentiment": "negative" },
+      { "text": "Best tres leches above 96th and it is not close.",                                                               "source_type": "reddit",  "source_label": "r/AskNYC", "sentiment": "positive" }
+    ],
+    "d15": [
+      { "text": "Doughy. They come out fast because they are not cooked long enough.",                                             "source_type": "reddit",  "source_label": "r/UpperWestSide", "sentiment": "negative" },
+      { "text": "Free with the table and worth exactly that.",                                                                     "source_type": "google",  "source_label": "Google review", "sentiment": "negative" },
+      { "text": "I like them. I am aware I am in the minority here.",                                                              "source_type": "reddit",  "source_label": "r/AskNYC", "sentiment": "positive" }
+    ],
+    "d19": [
+      { "text": "Shatteringly crisp and the glaze does not turn the skin soggy on the walk home.",                                 "source_type": "reddit",  "source_label": "r/AskNYC", "sentiment": "positive" },
+      { "text": "Order the large. Every time we order the small we regret it.",                                                    "source_type": "google",  "source_label": "Google review", "sentiment": "positive" }
+    ]
+  }
+}
