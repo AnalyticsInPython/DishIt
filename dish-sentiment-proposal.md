@@ -31,6 +31,11 @@ Pull from review sites (Google, Reddit, Beli) as well as from food critic sites 
 | `mentions` | One row per extracted mention of a dish in a piece of text | id, dish_id, source_id, sentiment, quote, extracted_at |
 | `sources` | The raw text unit a mention came from | id, restaurant_id, source_type (critic/reddit/yelp/google), url, raw_text, fetched_at |
 
+## 5. Group Members
 
+William Su
+Akhil Parlapalli
+Jacob Lundquist
+Jon Ye
 
 
