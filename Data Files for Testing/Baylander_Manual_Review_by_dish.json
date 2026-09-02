@@ -1,0 +1,781 @@
+{
+  "restaurants": [
+    {
+      "id": 1,
+      "name": "Baylander",
+      "neighborhood": null,
+      "cuisine": null,
+      "source_urls": null
+    }
+  ],
+  "dishes": [
+    {
+      "dish_id": 1,
+      "restaurant_id": 1,
+      "dish": "drinks",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 3,
+        "positive_mentions": 2,
+        "negative_mentions": 0,
+        "neutral_mentions": 1,
+        "average_confidence": 0.6617
+      },
+      "mentions": [
+        {
+          "source_id": 2,
+          "sentiment": "positive",
+          "confidence": 0.9921,
+          "evidence": "The food was delish, the drinks were strong and you can tell the employees love their job."
+        },
+        {
+          "source_id": 6,
+          "sentiment": "neutral",
+          "confidence": 0.0,
+          "evidence": "Order drinks and food at the bar."
+        },
+        {
+          "source_id": 9,
+          "sentiment": "positive",
+          "confidence": 0.9929,
+          "evidence": "Friendly staff, good food and drinks."
+        }
+      ]
+    },
+    {
+      "dish_id": 2,
+      "restaurant_id": 1,
+      "dish": "shrimp tacos",
+      "sentiment_summary": {
+        "overall_sentiment": "mixed",
+        "mention_count": 2,
+        "positive_mentions": 1,
+        "negative_mentions": 1,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9922
+      },
+      "mentions": [
+        {
+          "source_id": 4,
+          "sentiment": "positive",
+          "confidence": 0.9891,
+          "evidence": "The shrimp tacos were delicious, but very small."
+        },
+        {
+          "source_id": 20,
+          "sentiment": "negative",
+          "confidence": 0.9952,
+          "evidence": "Skip the shrimp tacos, Brussels sprouts with chimichurri (description sounded promising) and lemonade."
+        }
+      ]
+    },
+    {
+      "dish_id": 3,
+      "restaurant_id": 1,
+      "dish": "sweet potato fries",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 2,
+        "positive_mentions": 2,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9965
+      },
+      "mentions": [
+        {
+          "source_id": 4,
+          "sentiment": "positive",
+          "confidence": 0.9953,
+          "evidence": "The sweet potato fries were good and a nice portion."
+        },
+        {
+          "source_id": 20,
+          "sentiment": "positive",
+          "confidence": 0.9977,
+          "evidence": "Food was okay: pretty good lobster roll, nice corn/elote, ok veggie burger, yummy sweet potato fries."
+        }
+      ]
+    },
+    {
+      "dish_id": 4,
+      "restaurant_id": 1,
+      "dish": "beers",
+      "sentiment_summary": {
+        "overall_sentiment": "neutral",
+        "mention_count": 1,
+        "positive_mentions": 0,
+        "negative_mentions": 0,
+        "neutral_mentions": 1,
+        "average_confidence": 0.0
+      },
+      "mentions": [
+        {
+          "source_id": 5,
+          "sentiment": "neutral",
+          "confidence": 0.0,
+          "evidence": "5 beers/seltzers for $25!!"
+        }
+      ]
+    },
+    {
+      "dish_id": 5,
+      "restaurant_id": 1,
+      "dish": "calamari",
+      "sentiment_summary": {
+        "overall_sentiment": "mixed",
+        "mention_count": 2,
+        "positive_mentions": 1,
+        "negative_mentions": 1,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9714
+      },
+      "mentions": [
+        {
+          "source_id": 5,
+          "sentiment": "positive",
+          "confidence": 0.9956,
+          "evidence": "great deal for a boat in nyc. food was so delicious, especially the calamari."
+        },
+        {
+          "source_id": 6,
+          "sentiment": "negative",
+          "confidence": 0.9472,
+          "evidence": "I won't order the calamari again but it wasn't bad, it wasn't spicy and just didn't seem worth it."
+        }
+      ]
+    },
+    {
+      "dish_id": 6,
+      "restaurant_id": 1,
+      "dish": "seltzers",
+      "sentiment_summary": {
+        "overall_sentiment": "neutral",
+        "mention_count": 1,
+        "positive_mentions": 0,
+        "negative_mentions": 0,
+        "neutral_mentions": 1,
+        "average_confidence": 0.0
+      },
+      "mentions": [
+        {
+          "source_id": 5,
+          "sentiment": "neutral",
+          "confidence": 0.0,
+          "evidence": "5 beers/seltzers for $25!!"
+        }
+      ]
+    },
+    {
+      "dish_id": 7,
+      "restaurant_id": 1,
+      "dish": "fish taco",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9756
+      },
+      "mentions": [
+        {
+          "source_id": 6,
+          "sentiment": "positive",
+          "confidence": 0.9756,
+          "evidence": "The fish taco and lobster toll and hot dog were great."
+        }
+      ]
+    },
+    {
+      "dish_id": 8,
+      "restaurant_id": 1,
+      "dish": "hot dog",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9956
+      },
+      "mentions": [
+        {
+          "source_id": 6,
+          "sentiment": "positive",
+          "confidence": 0.9956,
+          "evidence": "The fish taco and lobster toll and hot dog were great."
+        }
+      ]
+    },
+    {
+      "dish_id": 9,
+      "restaurant_id": 1,
+      "dish": "lobster toll",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.96
+      },
+      "mentions": [
+        {
+          "source_id": 6,
+          "sentiment": "positive",
+          "confidence": 0.96,
+          "evidence": "The fish taco and lobster toll and hot dog were great."
+        }
+      ]
+    },
+    {
+      "dish_id": 10,
+      "restaurant_id": 1,
+      "dish": "bar food",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.7859
+      },
+      "mentions": [
+        {
+          "source_id": 8,
+          "sentiment": "positive",
+          "confidence": 0.7859,
+          "evidence": "Decent selection of bar food."
+        }
+      ]
+    },
+    {
+      "dish_id": 11,
+      "restaurant_id": 1,
+      "dish": "drink",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9945
+      },
+      "mentions": [
+        {
+          "source_id": 10,
+          "sentiment": "positive",
+          "confidence": 0.9945,
+          "evidence": "The drink (i had the mule) was perfectly made and delicious."
+        }
+      ]
+    },
+    {
+      "dish_id": 12,
+      "restaurant_id": 1,
+      "dish": "mule",
+      "sentiment_summary": {
+        "overall_sentiment": "neutral",
+        "mention_count": 1,
+        "positive_mentions": 0,
+        "negative_mentions": 0,
+        "neutral_mentions": 1,
+        "average_confidence": 0.0
+      },
+      "mentions": [
+        {
+          "source_id": 10,
+          "sentiment": "neutral",
+          "confidence": 0.0,
+          "evidence": "The drink (i had the mule) was perfectly made and delicious."
+        }
+      ]
+    },
+    {
+      "dish_id": 13,
+      "restaurant_id": 1,
+      "dish": "food",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 2,
+        "positive_mentions": 2,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.874
+      },
+      "mentions": [
+        {
+          "source_id": 11,
+          "sentiment": "positive",
+          "confidence": 0.9964,
+          "evidence": "The food is delicious and the drinks are always strong."
+        },
+        {
+          "source_id": 15,
+          "sentiment": "positive",
+          "confidence": 0.7516,
+          "evidence": "The food, drinks, view, and overall vibes were 10/10 for me!"
+        }
+      ]
+    },
+    {
+      "dish_id": 14,
+      "restaurant_id": 1,
+      "dish": "damn the torpedoes cocktail",
+      "sentiment_summary": {
+        "overall_sentiment": "neutral",
+        "mention_count": 1,
+        "positive_mentions": 0,
+        "negative_mentions": 0,
+        "neutral_mentions": 1,
+        "average_confidence": 0.0
+      },
+      "mentions": [
+        {
+          "source_id": 12,
+          "sentiment": "neutral",
+          "confidence": 0.0,
+          "evidence": "I paired it with some crispy fries and a Damn The Torpedoes cocktail."
+        }
+      ]
+    },
+    {
+      "dish_id": 15,
+      "restaurant_id": 1,
+      "dish": "harlem lobster roll-",
+      "sentiment_summary": {
+        "overall_sentiment": "neutral",
+        "mention_count": 1,
+        "positive_mentions": 0,
+        "negative_mentions": 0,
+        "neutral_mentions": 1,
+        "average_confidence": 0.0
+      },
+      "mentions": [
+        {
+          "source_id": 12,
+          "sentiment": "neutral",
+          "confidence": 0.0,
+          "evidence": "I had the Harlem Lobster Roll-"
+        }
+      ]
+    },
+    {
+      "dish_id": 16,
+      "restaurant_id": 1,
+      "dish": "cocktails",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 4,
+        "positive_mentions": 4,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9704
+      },
+      "mentions": [
+        {
+          "source_id": 13,
+          "sentiment": "positive",
+          "confidence": 0.9534,
+          "evidence": "Great place for cocktails and seafood pub grub."
+        },
+        {
+          "source_id": 14,
+          "sentiment": "positive",
+          "confidence": 0.9914,
+          "evidence": "The cocktails at Baylander were exceptional."
+        },
+        {
+          "source_id": 14,
+          "sentiment": "positive",
+          "confidence": 0.9914,
+          "evidence": "The stunning location, delicious food, great cocktails, and welcoming atmosphere make it a standout choice."
+        },
+        {
+          "source_id": 20,
+          "sentiment": "positive",
+          "confidence": 0.9454,
+          "evidence": "Can't imagine how strong their cocktails are for these prices but the ambiance is..."
+        }
+      ]
+    },
+    {
+      "dish_id": 17,
+      "restaurant_id": 1,
+      "dish": "crinkle cut fries",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9967
+      },
+      "mentions": [
+        {
+          "source_id": 13,
+          "sentiment": "positive",
+          "confidence": 0.9967,
+          "evidence": "I really enjoyed their smokey cocktail and they have great crinkle cut fries."
+        }
+      ]
+    },
+    {
+      "dish_id": 18,
+      "restaurant_id": 1,
+      "dish": "seafood pub grub",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.8033
+      },
+      "mentions": [
+        {
+          "source_id": 13,
+          "sentiment": "positive",
+          "confidence": 0.8033,
+          "evidence": "Great place for cocktails and seafood pub grub."
+        }
+      ]
+    },
+    {
+      "dish_id": 19,
+      "restaurant_id": 1,
+      "dish": "smokey cocktail",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9883
+      },
+      "mentions": [
+        {
+          "source_id": 13,
+          "sentiment": "positive",
+          "confidence": 0.9883,
+          "evidence": "I really enjoyed their smokey cocktail and they have great crinkle cut fries."
+        }
+      ]
+    },
+    {
+      "dish_id": 20,
+      "restaurant_id": 1,
+      "dish": "brunch",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.995
+      },
+      "mentions": [
+        {
+          "source_id": 14,
+          "sentiment": "positive",
+          "confidence": 0.995,
+          "evidence": "I'm already looking forward to my next visit and I highly recommend it to anyone seeking a memorable brunch experience."
+        }
+      ]
+    },
+    {
+      "dish_id": 21,
+      "restaurant_id": 1,
+      "dish": "baylander burger",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9672
+      },
+      "mentions": [
+        {
+          "source_id": 16,
+          "sentiment": "positive",
+          "confidence": 0.9672,
+          "evidence": "Baylander Burger and Fish Tacos really good!"
+        }
+      ]
+    },
+    {
+      "dish_id": 22,
+      "restaurant_id": 1,
+      "dish": "beer",
+      "sentiment_summary": {
+        "overall_sentiment": "negative",
+        "mention_count": 1,
+        "positive_mentions": 0,
+        "negative_mentions": 1,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9968
+      },
+      "mentions": [
+        {
+          "source_id": 16,
+          "sentiment": "negative",
+          "confidence": 0.9968,
+          "evidence": "In regards of our drinks , Beer wasn\u2019t at the right temperature, The Torpedo Margaritas were great !"
+        }
+      ]
+    },
+    {
+      "dish_id": 23,
+      "restaurant_id": 1,
+      "dish": "fish tacos",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9965
+      },
+      "mentions": [
+        {
+          "source_id": 16,
+          "sentiment": "positive",
+          "confidence": 0.9965,
+          "evidence": "Baylander Burger and Fish Tacos really good!"
+        }
+      ]
+    },
+    {
+      "dish_id": 24,
+      "restaurant_id": 1,
+      "dish": "fry calamari",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9974
+      },
+      "mentions": [
+        {
+          "source_id": 16,
+          "sentiment": "positive",
+          "confidence": 0.9974,
+          "evidence": "The Fry Calamari was amazing !"
+        }
+      ]
+    },
+    {
+      "dish_id": 25,
+      "restaurant_id": 1,
+      "dish": "torpedo margaritas",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9982
+      },
+      "mentions": [
+        {
+          "source_id": 16,
+          "sentiment": "positive",
+          "confidence": 0.9982,
+          "evidence": "In regards of our drinks , Beer wasn\u2019t at the right temperature, The Torpedo Margaritas were great !"
+        }
+      ]
+    },
+    {
+      "dish_id": 26,
+      "restaurant_id": 1,
+      "dish": "mocktails",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.927
+      },
+      "mentions": [
+        {
+          "source_id": 19,
+          "sentiment": "positive",
+          "confidence": 0.927,
+          "evidence": "It was wonderful to know they have mocktails and non-alcoholic beer."
+        }
+      ]
+    },
+    {
+      "dish_id": 27,
+      "restaurant_id": 1,
+      "dish": "non-alcoholic beer",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.984
+      },
+      "mentions": [
+        {
+          "source_id": 19,
+          "sentiment": "positive",
+          "confidence": 0.984,
+          "evidence": "It was wonderful to know they have mocktails and non-alcoholic beer."
+        }
+      ]
+    },
+    {
+      "dish_id": 28,
+      "restaurant_id": 1,
+      "dish": "pretzels",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9199
+      },
+      "mentions": [
+        {
+          "source_id": 19,
+          "sentiment": "positive",
+          "confidence": 0.9199,
+          "evidence": "I had the pretzels, and it was so soft and delicious."
+        }
+      ]
+    },
+    {
+      "dish_id": 29,
+      "restaurant_id": 1,
+      "dish": "brussels sprouts",
+      "sentiment_summary": {
+        "overall_sentiment": "neutral",
+        "mention_count": 1,
+        "positive_mentions": 0,
+        "negative_mentions": 0,
+        "neutral_mentions": 1,
+        "average_confidence": 0.0
+      },
+      "mentions": [
+        {
+          "source_id": 20,
+          "sentiment": "neutral",
+          "confidence": 0.0,
+          "evidence": "Skip the shrimp tacos, Brussels sprouts with chimichurri (description sounded promising) and lemonade."
+        }
+      ]
+    },
+    {
+      "dish_id": 30,
+      "restaurant_id": 1,
+      "dish": "chimichurri",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9153
+      },
+      "mentions": [
+        {
+          "source_id": 20,
+          "sentiment": "positive",
+          "confidence": 0.9153,
+          "evidence": "Skip the shrimp tacos, Brussels sprouts with chimichurri (description sounded promising) and lemonade."
+        }
+      ]
+    },
+    {
+      "dish_id": 31,
+      "restaurant_id": 1,
+      "dish": "corn/elote",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9975
+      },
+      "mentions": [
+        {
+          "source_id": 20,
+          "sentiment": "positive",
+          "confidence": 0.9975,
+          "evidence": "Food was okay: pretty good lobster roll, nice corn/elote, ok veggie burger, yummy sweet potato fries."
+        }
+      ]
+    },
+    {
+      "dish_id": 32,
+      "restaurant_id": 1,
+      "dish": "lemonade",
+      "sentiment_summary": {
+        "overall_sentiment": "neutral",
+        "mention_count": 1,
+        "positive_mentions": 0,
+        "negative_mentions": 0,
+        "neutral_mentions": 1,
+        "average_confidence": 0.0
+      },
+      "mentions": [
+        {
+          "source_id": 20,
+          "sentiment": "neutral",
+          "confidence": 0.0,
+          "evidence": "Skip the shrimp tacos, Brussels sprouts with chimichurri (description sounded promising) and lemonade."
+        }
+      ]
+    },
+    {
+      "dish_id": 33,
+      "restaurant_id": 1,
+      "dish": "lobster roll",
+      "sentiment_summary": {
+        "overall_sentiment": "positive",
+        "mention_count": 1,
+        "positive_mentions": 1,
+        "negative_mentions": 0,
+        "neutral_mentions": 0,
+        "average_confidence": 0.9971
+      },
+      "mentions": [
+        {
+          "source_id": 20,
+          "sentiment": "positive",
+          "confidence": 0.9971,
+          "evidence": "Food was okay: pretty good lobster roll, nice corn/elote, ok veggie burger, yummy sweet potato fries."
+        }
+      ]
+    },
+    {
+      "dish_id": 34,
+      "restaurant_id": 1,
+      "dish": "veggie burger",
+      "sentiment_summary": {
+        "overall_sentiment": "neutral",
+        "mention_count": 1,
+        "positive_mentions": 0,
+        "negative_mentions": 0,
+        "neutral_mentions": 1,
+        "average_confidence": 0.0
+      },
+      "mentions": [
+        {
+          "source_id": 20,
+          "sentiment": "neutral",
+          "confidence": 0.0,
+          "evidence": "Food was okay: pretty good lobster roll, nice corn/elote, ok veggie burger, yummy sweet potato fries."
+        }
+      ]
+    }
+  ]
+}

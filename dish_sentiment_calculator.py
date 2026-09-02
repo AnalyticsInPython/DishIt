@@ -93,11 +93,11 @@ CREATE TABLE mentions (
     dish_id INTEGER NOT NULL REFERENCES dishes(id),
     source_id INTEGER NOT NULL REFERENCES sources(id),
     sentiment TEXT NOT NULL,
+    confidence REAL NOT NULL,
     quote TEXT NOT NULL,
     extracted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 """
-
 
 def get_source_review(
     connection: sqlite3.Connection, source_id: int
@@ -227,14 +227,28 @@ def analyze_all_sources(
 
 def build_manual_review_outputs(
     input_database: Path,
-    output_database: Path,
-    output_json: Path,
+    review_output_database: Path,
+    review_output_json: Path,
+    dish_output_database: Path | None = None,
+    dish_output_json: Path | None = None,
     nlp: Language | None = None,
     dish_extractor: EntityExtractor | None = None,
     aspect_sentiment_analyzer: AspectSentimentAnalyzer | None = None,
-) -> None:
-    """Create clean SQLite and JSON exports for manual dish-sentiment review."""
-    if output_database.exists() or output_json.exists():
+) -> tuple[Path, Path]:
+    """Create review-first and dish-first SQLite/JSON exports for manual review."""
+    dish_output_database = dish_output_database or review_output_database.with_stem(
+        f"{review_output_database.stem}_by_dish"
+    )
+    dish_output_json = dish_output_json or review_output_json.with_stem(
+        f"{review_output_json.stem}_by_dish"
+    )
+    output_paths = (
+        review_output_database,
+        review_output_json,
+        dish_output_database,
+        dish_output_json,
+    )
+    if any(path.exists() for path in output_paths):
         raise FileExistsError("Review output paths must not already exist.")
 
     with sqlite3.connect(input_database) as input_connection:
@@ -260,30 +274,8 @@ def build_manual_review_outputs(
             for source in source_rows
         }
 
-    review_payload = {
-        "restaurants": [dict(restaurant) for restaurant in restaurant_rows],
-        "reviews": [
-            {
-                "source_id": source["id"],
-                "restaurant_id": source["restaurant_id"],
-                "review_text": source["raw_text"],
-                "dish_sentiment": [
-                    {
-                        "dish": review.dish,
-                        "sentiment": review.sentiment,
-                        "confidence": round(abs(review.score), 4),
-                        "mentions": review.mentions,
-                        "evidence": list(review.contexts),
-                    }
-                    for review in source_reviews[int(source["id"])]
-                ],
-            }
-            for source in source_rows
-        ],
-    }
-    output_json.write_text(json.dumps(review_payload, indent=2) + "\n", encoding="utf-8")
-
-    with sqlite3.connect(output_database) as output_connection:
+    review_results: list[dict[str, object]] = []
+    with sqlite3.connect(review_output_database) as output_connection:
         output_connection.executescript(REVIEW_OUTPUT_SCHEMA)
         with output_connection:
             output_connection.executemany(
@@ -306,14 +298,167 @@ def build_manual_review_outputs(
                 restaurant_id = int(source["restaurant_id"])
                 for review in source_reviews[int(source["id"])]:
                     dish_id = get_or_create_dish(output_connection, restaurant_id, review.dish)
+                    confidence = abs(review.score) / review.mentions
+                    review_results.append(
+                        {
+                            "source_id": source["id"],
+                            "restaurant_id": restaurant_id,
+                            "dish_id": dish_id,
+                            "dish": review.dish,
+                            "sentiment": review.sentiment,
+                            "confidence": confidence,
+                            "mentions": review.mentions,
+                            "evidence": list(review.contexts),
+                        }
+                    )
                     for context in review.contexts:
                         output_connection.execute(
                             """
-                            INSERT INTO mentions (dish_id, source_id, sentiment, quote)
-                            VALUES (?, ?, ?, ?)
+                            INSERT INTO mentions (
+                                dish_id, source_id, sentiment, confidence, quote
+                            )
+                            VALUES (?, ?, ?, ?, ?)
                             """,
-                            (dish_id, source["id"], review.sentiment, context),
+                            (
+                                dish_id,
+                                source["id"],
+                                review.sentiment,
+                                confidence,
+                                context,
+                            ),
                         )
+
+    review_payload = {
+        "restaurants": [dict(restaurant) for restaurant in restaurant_rows],
+        "reviews": [
+            {
+                "source_id": source["id"],
+                "restaurant_id": source["restaurant_id"],
+                "review_text": source["raw_text"],
+                "dish_sentiment": [
+                    result
+                    for result in review_results
+                    if result["source_id"] == source["id"]
+                ],
+            }
+            for source in source_rows
+        ],
+    }
+    review_output_json.write_text(
+        json.dumps(review_payload, indent=2) + "\n", encoding="utf-8"
+    )
+
+    with sqlite3.connect(review_output_database) as review_connection:
+        with sqlite3.connect(dish_output_database) as output_connection:
+            review_connection.backup(output_connection)
+            output_connection.executescript(
+                """
+                CREATE TABLE dish_sentiment_summary (
+                    dish_id INTEGER PRIMARY KEY REFERENCES dishes(id),
+                    overall_sentiment TEXT NOT NULL,
+                    mention_count INTEGER NOT NULL,
+                    positive_mentions INTEGER NOT NULL,
+                    negative_mentions INTEGER NOT NULL,
+                    neutral_mentions INTEGER NOT NULL,
+                    average_confidence REAL NOT NULL
+                );
+                """
+            )
+            with output_connection:
+                output_connection.execute(
+                    """
+                    INSERT INTO dish_sentiment_summary (
+                        dish_id, overall_sentiment, mention_count, positive_mentions,
+                        negative_mentions, neutral_mentions, average_confidence
+                    )
+                    SELECT
+                        dish_id,
+                        CASE
+                            WHEN SUM(sentiment = 'positive') > 0
+                             AND SUM(sentiment = 'negative') > 0 THEN 'mixed'
+                            WHEN SUM(sentiment = 'positive') > SUM(sentiment = 'negative')
+                                THEN 'positive'
+                            WHEN SUM(sentiment = 'negative') > SUM(sentiment = 'positive')
+                                THEN 'negative'
+                            ELSE 'neutral'
+                        END,
+                        COUNT(*),
+                        SUM(sentiment = 'positive'),
+                        SUM(sentiment = 'negative'),
+                        SUM(sentiment = 'neutral'),
+                        AVG(confidence)
+                    FROM mentions
+                    GROUP BY dish_id
+                    """
+                )
+                dish_rows = output_connection.execute(
+                    """
+                    SELECT
+                        d.id, d.restaurant_id, d.canonical_name,
+                        s.overall_sentiment, s.mention_count, s.positive_mentions,
+                        s.negative_mentions, s.neutral_mentions, s.average_confidence
+                    FROM dishes AS d
+                    JOIN dish_sentiment_summary AS s ON s.dish_id = d.id
+                    ORDER BY d.id
+                    """
+                ).fetchall()
+                mention_rows = output_connection.execute(
+                    """
+                    SELECT dish_id, source_id, sentiment, confidence, quote
+                    FROM mentions
+                    ORDER BY id
+                    """
+                ).fetchall()
+
+    dish_payload = {
+        "restaurants": [dict(restaurant) for restaurant in restaurant_rows],
+        "dishes": [
+            {
+                "dish_id": dish_id,
+                "restaurant_id": restaurant_id,
+                "dish": canonical_name,
+                "sentiment_summary": {
+                    "overall_sentiment": overall_sentiment,
+                    "mention_count": mention_count,
+                    "positive_mentions": positive_mentions,
+                    "negative_mentions": negative_mentions,
+                    "neutral_mentions": neutral_mentions,
+                    "average_confidence": round(average_confidence, 4),
+                },
+                "mentions": [
+                    {
+                        "source_id": source_id,
+                        "sentiment": sentiment,
+                        "confidence": round(confidence, 4),
+                        "evidence": quote,
+                    }
+                    for (
+                        mention_dish_id,
+                        source_id,
+                        sentiment,
+                        confidence,
+                        quote,
+                    ) in mention_rows
+                    if mention_dish_id == dish_id
+                ],
+            }
+            for (
+                dish_id,
+                restaurant_id,
+                canonical_name,
+                overall_sentiment,
+                mention_count,
+                positive_mentions,
+                negative_mentions,
+                neutral_mentions,
+                average_confidence,
+            ) in dish_rows
+        ],
+    }
+    dish_output_json.write_text(
+        json.dumps(dish_payload, indent=2) + "\n", encoding="utf-8"
+    )
+    return dish_output_database, dish_output_json
 
 
 def load_nlp() -> Language:
@@ -519,14 +664,14 @@ if __name__ == "__main__":
             or arguments.output_json is None
         ):
             parser.error("review requires INPUT_DATABASE OUTPUT_DATABASE OUTPUT_JSON.")
-        build_manual_review_outputs(
+        dish_database, dish_json = build_manual_review_outputs(
             Path(arguments.database),
             Path(arguments.target),
             Path(arguments.output_json),
         )
         print(
             f"Wrote manual-review exports to {arguments.target} and "
-            f"{arguments.output_json}."
+            f"{arguments.output_json}; dish rollups to {dish_database} and {dish_json}."
         )
         raise SystemExit(0)
     else:

@@ -246,6 +246,8 @@ class DishSentimentTests(unittest.TestCase):
             input_database = Path(directory) / "input.sqlite3"
             output_database = Path(directory) / "review.sqlite3"
             output_json = Path(directory) / "review.json"
+            dish_database = Path(directory) / "review_by_dish.sqlite3"
+            dish_json = Path(directory) / "review_by_dish.json"
             with sqlite3.connect(input_database) as connection:
                 connection.executescript(
                     """
@@ -277,20 +279,31 @@ class DishSentimentTests(unittest.TestCase):
             def generic_extractor(_: str) -> list[dict[str, object]]:
                 return [{"label": "specific dish or menu item", "start": 11, "end": 15}]
 
-            build_manual_review_outputs(
+            written_dish_database, written_dish_json = build_manual_review_outputs(
                 input_database,
                 output_database,
                 output_json,
+                dish_database,
+                dish_json,
                 nlp=self.nlp,
                 dish_extractor=generic_extractor,
                 aspect_sentiment_analyzer=self.aspect_sentiment_analyzer,
             )
 
             self.assertTrue(output_json.exists())
+            self.assertEqual(written_dish_database, dish_database)
+            self.assertEqual(written_dish_json, dish_json)
             payload = json.loads(output_json.read_text(encoding="utf-8"))
             self.assertEqual(payload["reviews"][0]["source_id"], 1)
             self.assertEqual(
                 payload["reviews"][0]["dish_sentiment"][0]["dish"], "crispy duck"
+            )
+            self.assertEqual(payload["reviews"][0]["dish_sentiment"][0]["dish_id"], 1)
+            dish_payload = json.loads(dish_json.read_text(encoding="utf-8"))
+            self.assertEqual(dish_payload["dishes"][0]["dish_id"], 1)
+            self.assertEqual(
+                dish_payload["dishes"][0]["sentiment_summary"]["overall_sentiment"],
+                "positive",
             )
             with sqlite3.connect(output_database) as connection:
                 self.assertEqual(
@@ -302,6 +315,16 @@ class DishSentimentTests(unittest.TestCase):
                         "SELECT sentiment FROM mentions"
                     ).fetchall(),
                     [("positive",)],
+                )
+            with sqlite3.connect(dish_database) as connection:
+                self.assertEqual(
+                    connection.execute(
+                        """
+                        SELECT dish_id, overall_sentiment, positive_mentions
+                        FROM dish_sentiment_summary
+                        """
+                    ).fetchall(),
+                    [(1, "positive", 1)],
                 )
 
 

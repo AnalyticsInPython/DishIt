@@ -21,9 +21,12 @@
       "review_text": "Was recommended this semi hidden gem on the water. It was the perfect place for a night out with a friend or a date! The food was delish, the drinks were strong and you can tell the employees love their job. Everyone from the kitchen staff to the bartenders had warm smiles and were eager to help. The views are beautiful and I would 10/10 recommend! The ramp leading to the ship is a lil choppy due to the water so prepare yourself if you are someone who experiences motion sickness.",
       "dish_sentiment": [
         {
+          "source_id": 2,
+          "restaurant_id": 1,
+          "dish_id": 1,
           "dish": "drinks",
           "sentiment": "positive",
-          "confidence": 0.9921,
+          "confidence": 0.9920761585235596,
           "mentions": 1,
           "evidence": [
             "The food was delish, the drinks were strong and you can tell the employees love their job."
@@ -43,18 +46,24 @@
       "review_text": "EDIT: Check your credit card statement! An 18% mystery charge was added after the initial purchase though one was not authorized when payment was made. Contacted establishment via email as there\u2019s no phone number listed and never received a response.\n\nFormer \u201cWorld\u2019s Smallest Aircraft Carrier\u201d turned outdoor bar and grill. Amazing views, good menu. The shrimp tacos were delicious, but very small. The sweet potato fries were good and a nice portion. Casual, cool vibe\u2014but a bit too loud.",
       "dish_sentiment": [
         {
+          "source_id": 4,
+          "restaurant_id": 1,
+          "dish_id": 2,
           "dish": "shrimp tacos",
           "sentiment": "positive",
-          "confidence": 0.9891,
+          "confidence": 0.9891173243522644,
           "mentions": 1,
           "evidence": [
             "The shrimp tacos were delicious, but very small."
           ]
         },
         {
+          "source_id": 4,
+          "restaurant_id": 1,
+          "dish_id": 3,
           "dish": "sweet potato fries",
           "sentiment": "positive",
-          "confidence": 0.9953,
+          "confidence": 0.9952505826950073,
           "mentions": 1,
           "evidence": [
             "The sweet potato fries were good and a nice portion."
@@ -68,6 +77,9 @@
       "review_text": "5 beers/seltzers for $25!! great deal for a boat in nyc. food was so delicious, especially the calamari. it was a little windy when we came but I still had a great time. bartenders so friendly. will definitely come again!!",
       "dish_sentiment": [
         {
+          "source_id": 5,
+          "restaurant_id": 1,
+          "dish_id": 4,
           "dish": "beers",
           "sentiment": "neutral",
           "confidence": 0.0,
@@ -77,15 +89,21 @@
           ]
         },
         {
+          "source_id": 5,
+          "restaurant_id": 1,
+          "dish_id": 5,
           "dish": "calamari",
           "sentiment": "positive",
-          "confidence": 0.9956,
+          "confidence": 0.99562668800354,
           "mentions": 1,
           "evidence": [
             "great deal for a boat in nyc. food was so delicious, especially the calamari."
           ]
         },
         {
+          "source_id": 5,
+          "restaurant_id": 1,
+          "dish_id": 6,
           "dish": "seltzers",
           "sentiment": "neutral",
           "confidence": 0.0,
@@ -102,15 +120,21 @@
       "review_text": "Cool experience. Order drinks and food at the bar. You get a buzzer to pick up your food at the window when it is ready. It was crowded and there was a birthday party event happening when we went. I recommend a reservation if you can! Especially for sunset.\n\nThe fish taco and lobster toll and hot dog were great. I won't order the calamari again but it wasn't bad, it wasn't spicy and just didn't seem worth it.",
       "dish_sentiment": [
         {
+          "source_id": 6,
+          "restaurant_id": 1,
+          "dish_id": 5,
           "dish": "calamari",
           "sentiment": "negative",
-          "confidence": 0.9472,
+          "confidence": 0.9472042918205261,
           "mentions": 1,
           "evidence": [
             "I won't order the calamari again but it wasn't bad, it wasn't spicy and just didn't seem worth it."
           ]
         },
         {
+          "source_id": 6,
+          "restaurant_id": 1,
+          "dish_id": 1,
           "dish": "drinks",
           "sentiment": "neutral",
           "confidence": 0.0,
@@ -120,27 +144,36 @@
           ]
         },
         {
+          "source_id": 6,
+          "restaurant_id": 1,
+          "dish_id": 7,
           "dish": "fish taco",
           "sentiment": "positive",
-          "confidence": 0.9756,
+          "confidence": 0.9756144285202026,
           "mentions": 1,
           "evidence": [
             "The fish taco and lobster toll and hot dog were great."
           ]
         },
         {
+          "source_id": 6,
+          "restaurant_id": 1,
+          "dish_id": 8,
           "dish": "hot dog",
           "sentiment": "positive",
-          "confidence": 0.9956,
+          "confidence": 0.9956116080284119,
           "mentions": 1,
           "evidence": [
             "The fish taco and lobster toll and hot dog were great."
           ]
         },
         {
+          "source_id": 6,
+          "restaurant_id": 1,
+          "dish_id": 9,
           "dish": "lobster toll",
           "sentiment": "positive",
-          "confidence": 0.96,
+          "confidence": 0.9600031971931458,
           "mentions": 1,
           "evidence": [
             "The fish taco and lobster toll and hot dog were great."
@@ -160,9 +193,12 @@
       "review_text": "Playlist was perfect. There are 4 restrooms/stalls. Two on each level. Decent selection of bar food. If you go in the cooler months like spring and fall, your food will get cold quick due to the sea breeze. Slight smell of garbage every once in awhile.",
       "dish_sentiment": [
         {
+          "source_id": 8,
+          "restaurant_id": 1,
+          "dish_id": 10,
           "dish": "bar food",
           "sentiment": "positive",
-          "confidence": 0.7859,
+          "confidence": 0.7859074473381042,
           "mentions": 1,
           "evidence": [
             "Decent selection of bar food."
@@ -176,9 +212,12 @@
       "review_text": "Nice place with an amazing view. Friendly staff, good food and drinks. Love the laidback vibe. Will definitely return",
       "dish_sentiment": [
         {
+          "source_id": 9,
+          "restaurant_id": 1,
+          "dish_id": 1,
           "dish": "drinks",
           "sentiment": "positive",
-          "confidence": 0.9929,
+          "confidence": 0.9929364323616028,
           "mentions": 1,
           "evidence": [
             "Friendly staff, good food and drinks."
@@ -192,15 +231,21 @@
       "review_text": "Went yesterday as the sun was setting and the view was spectacular. This place is good for groups or couples. Great vibes. Everyone was very friendly. The drink (i had the mule) was perfectly made and delicious. The food was nothing fancy, finger foods, but was good nonetheless. Reservations highly recommended. This is going to be my summer spot.",
       "dish_sentiment": [
         {
+          "source_id": 10,
+          "restaurant_id": 1,
+          "dish_id": 11,
           "dish": "drink",
           "sentiment": "positive",
-          "confidence": 0.9945,
+          "confidence": 0.9944571256637573,
           "mentions": 1,
           "evidence": [
             "The drink (i had the mule) was perfectly made and delicious."
           ]
         },
         {
+          "source_id": 10,
+          "restaurant_id": 1,
+          "dish_id": 12,
           "dish": "mule",
           "sentiment": "neutral",
           "confidence": 0.0,
@@ -217,9 +262,12 @@
       "review_text": "Come see the amazing views on the Hudson River. This is an amazing location that I absolutely recommend to anyone here in the city. It is a unique experience to wine and dine on a military vessel. The food is delicious and the drinks are always strong. The bartenders are friendly and quick! I always bring friends here and they love the views and service from the staff. I even did a wedding rehearsal here once. My family and friends loved it. It was scenic and very memorable for everyone.",
       "dish_sentiment": [
         {
+          "source_id": 11,
+          "restaurant_id": 1,
+          "dish_id": 13,
           "dish": "food",
           "sentiment": "positive",
-          "confidence": 0.9964,
+          "confidence": 0.9963638186454773,
           "mentions": 1,
           "evidence": [
             "The food is delicious and the drinks are always strong."
@@ -233,6 +281,9 @@
       "review_text": "The Baylander is such a vibe. First off- it\u2019s a ship! Some slight rocking but that\u2019s to be expected- it\u2019s on the water and the tunes don\u2019t disappoint if you feel like rocking simultaneously.\nIt\u2019s right on the west side highway perfectly perched on the 125th street pier.\nThe environment is very welcoming. A perfect place for drinks after work or for a nice date with that special someone. You can even pull up on a jet ski or boat for a quick meal. I truly enjoyed my time here.\nThe food is great! I had the Harlem Lobster Roll- the meat was big, juicy, and tasty. I paired it with some crispy fries and a Damn The Torpedoes cocktail.\nSo peeps- Make your way to the Baylander for an awesome time I definitely recommend this establishment.",
       "dish_sentiment": [
         {
+          "source_id": 12,
+          "restaurant_id": 1,
+          "dish_id": 14,
           "dish": "damn the torpedoes cocktail",
           "sentiment": "neutral",
           "confidence": 0.0,
@@ -242,6 +293,9 @@
           ]
         },
         {
+          "source_id": 12,
+          "restaurant_id": 1,
+          "dish_id": 15,
           "dish": "harlem lobster roll-",
           "sentiment": "neutral",
           "confidence": 0.0,
@@ -258,36 +312,48 @@
       "review_text": "Great place for cocktails and seafood pub grub. Loved the summer vibes on the water with nice city views. I really enjoyed their smokey cocktail and they have great crinkle cut fries. You can reserve a table ahead of time.",
       "dish_sentiment": [
         {
+          "source_id": 13,
+          "restaurant_id": 1,
+          "dish_id": 16,
           "dish": "cocktails",
           "sentiment": "positive",
-          "confidence": 0.9534,
+          "confidence": 0.9533604383468628,
           "mentions": 1,
           "evidence": [
             "Great place for cocktails and seafood pub grub."
           ]
         },
         {
+          "source_id": 13,
+          "restaurant_id": 1,
+          "dish_id": 17,
           "dish": "crinkle cut fries",
           "sentiment": "positive",
-          "confidence": 0.9967,
+          "confidence": 0.9967039227485657,
           "mentions": 1,
           "evidence": [
             "I really enjoyed their smokey cocktail and they have great crinkle cut fries."
           ]
         },
         {
+          "source_id": 13,
+          "restaurant_id": 1,
+          "dish_id": 18,
           "dish": "seafood pub grub",
           "sentiment": "positive",
-          "confidence": 0.8033,
+          "confidence": 0.8032938241958618,
           "mentions": 1,
           "evidence": [
             "Great place for cocktails and seafood pub grub."
           ]
         },
         {
+          "source_id": 13,
+          "restaurant_id": 1,
+          "dish_id": 19,
           "dish": "smokey cocktail",
           "sentiment": "positive",
-          "confidence": 0.9883,
+          "confidence": 0.9883279204368591,
           "mentions": 1,
           "evidence": [
             "I really enjoyed their smokey cocktail and they have great crinkle cut fries."
@@ -301,18 +367,24 @@
       "review_text": "I recently had the pleasure of experiencing brunch at Baylander and it was absolutely fantastic! The location right on the Hudson River is simply breathtaking, offering stunning views that enhance the dining experience. The atmosphere was perfect, with just the right amount of music playing in the background, creating a lively yet relaxing ambiance.\n\nThe cocktails at Baylander were exceptional. They were expertly crafted and delicious, perfectly complementing the mouthwatering food that was served. Every bite was a delight, with a wide variety of options to choose from and each dish bursting with flavor. The menu catered to different tastes and dietary preferences, ensuring that everyone could find something to enjoy.\n\nWhat made the experience even more enjoyable was the pleasant weather and the cooling breeze from the river. It provided a refreshing escape from the heat, allowing me to fully savor the meal and the beautiful surroundings.\n\nOne of the things I appreciated about Baylander was that it wasn't overly crowded. I could truly relax and enjoy my brunch without feeling rushed or overwhelmed. It's clear that this hidden gem has yet to be fully discovered, and if it were located downtown, I have no doubt it would be packed.\n\nOverall, Baylander is a great spot for brunch. The stunning location, delicious food, great cocktails, and welcoming atmosphere make it a standout choice. I'm already looking forward to my next visit and I highly recommend it to anyone seeking a memorable brunch experience.",
       "dish_sentiment": [
         {
+          "source_id": 14,
+          "restaurant_id": 1,
+          "dish_id": 20,
           "dish": "brunch",
           "sentiment": "positive",
-          "confidence": 0.995,
+          "confidence": 0.9949771761894226,
           "mentions": 1,
           "evidence": [
             "I'm already looking forward to my next visit and I highly recommend it to anyone seeking a memorable brunch experience."
           ]
         },
         {
+          "source_id": 14,
+          "restaurant_id": 1,
+          "dish_id": 16,
           "dish": "cocktails",
           "sentiment": "positive",
-          "confidence": 1.9828,
+          "confidence": 0.9913993775844574,
           "mentions": 2,
           "evidence": [
             "The cocktails at Baylander were exceptional.",
@@ -327,9 +399,12 @@
       "review_text": "It was my first time going to this place and I really enjoyed it. I want to go back before the summer ends. The food, drinks, view, and overall vibes were 10/10 for me! And, no one asked me to leave a review. I\u2019m leaving it because I really liked this spot.",
       "dish_sentiment": [
         {
+          "source_id": 15,
+          "restaurant_id": 1,
+          "dish_id": 13,
           "dish": "food",
           "sentiment": "positive",
-          "confidence": 0.7516,
+          "confidence": 0.7516078948974609,
           "mentions": 1,
           "evidence": [
             "The food, drinks, view, and overall vibes were 10/10 for me!"
@@ -343,45 +418,60 @@
       "review_text": "The Fry Calamari was amazing !\nBaylander Burger and Fish Tacos really good!\nIn regards of our drinks , Beer wasn\u2019t at the right temperature, The Torpedo Margaritas were great !\nBathroom Wasn\u2019t cleaned at all !\nOverall a great experience, very nice hostess and bartenders!\nGreat environment to go with your wife/husband and enjoy the view with some drinks !\nDefinitely recommend this place to my friends !",
       "dish_sentiment": [
         {
+          "source_id": 16,
+          "restaurant_id": 1,
+          "dish_id": 21,
           "dish": "baylander burger",
           "sentiment": "positive",
-          "confidence": 0.9672,
+          "confidence": 0.9672255516052246,
           "mentions": 1,
           "evidence": [
             "Baylander Burger and Fish Tacos really good!"
           ]
         },
         {
+          "source_id": 16,
+          "restaurant_id": 1,
+          "dish_id": 22,
           "dish": "beer",
           "sentiment": "negative",
-          "confidence": 0.9968,
+          "confidence": 0.9967755675315857,
           "mentions": 1,
           "evidence": [
             "In regards of our drinks , Beer wasn\u2019t at the right temperature, The Torpedo Margaritas were great !"
           ]
         },
         {
+          "source_id": 16,
+          "restaurant_id": 1,
+          "dish_id": 23,
           "dish": "fish tacos",
           "sentiment": "positive",
-          "confidence": 0.9965,
+          "confidence": 0.9964708089828491,
           "mentions": 1,
           "evidence": [
             "Baylander Burger and Fish Tacos really good!"
           ]
         },
         {
+          "source_id": 16,
+          "restaurant_id": 1,
+          "dish_id": 24,
           "dish": "fry calamari",
           "sentiment": "positive",
-          "confidence": 0.9974,
+          "confidence": 0.9974117875099182,
           "mentions": 1,
           "evidence": [
             "The Fry Calamari was amazing !"
           ]
         },
         {
+          "source_id": 16,
+          "restaurant_id": 1,
+          "dish_id": 25,
           "dish": "torpedo margaritas",
           "sentiment": "positive",
-          "confidence": 0.9982,
+          "confidence": 0.9982125759124756,
           "mentions": 1,
           "evidence": [
             "In regards of our drinks , Beer wasn\u2019t at the right temperature, The Torpedo Margaritas were great !"
@@ -407,27 +497,36 @@
       "review_text": "It's beautiful to see that my neighborhood can enjoy the same things as those who live below 96 Street. I went on a Wednesday, and they had a private party but were opening up for the public at 3:15pm. Hostess was very informative. Told us how to order, where to pick up, and also where the restroom was. The maintenance staff were on point, a napkins fell, and they were right there to pick it up. I had the pretzels, and it was so soft and delicious. The sauces are one cheese and the other mustard. It was wonderful to know they have mocktails and non-alcoholic beer. Will definitely return loved the sun and feeling the waves.",
       "dish_sentiment": [
         {
+          "source_id": 19,
+          "restaurant_id": 1,
+          "dish_id": 26,
           "dish": "mocktails",
           "sentiment": "positive",
-          "confidence": 0.927,
+          "confidence": 0.9270315170288086,
           "mentions": 1,
           "evidence": [
             "It was wonderful to know they have mocktails and non-alcoholic beer."
           ]
         },
         {
+          "source_id": 19,
+          "restaurant_id": 1,
+          "dish_id": 27,
           "dish": "non-alcoholic beer",
           "sentiment": "positive",
-          "confidence": 0.984,
+          "confidence": 0.9839658737182617,
           "mentions": 1,
           "evidence": [
             "It was wonderful to know they have mocktails and non-alcoholic beer."
           ]
         },
         {
+          "source_id": 19,
+          "restaurant_id": 1,
+          "dish_id": 28,
           "dish": "pretzels",
           "sentiment": "positive",
-          "confidence": 0.9199,
+          "confidence": 0.9198667407035828,
           "mentions": 1,
           "evidence": [
             "I had the pretzels, and it was so soft and delicious."
@@ -441,6 +540,9 @@
       "review_text": "The Baylander is all about Hudson breezes, sunset views, and a really unusual boating experience. Food was okay: pretty good lobster roll, nice corn/elote, ok veggie burger, yummy sweet potato fries. Skip the shrimp tacos, Brussels sprouts with chimichurri (description sounded promising) and lemonade. Can't imagine how strong their cocktails are for these prices but the ambiance is... As they say .. priceless.",
       "dish_sentiment": [
         {
+          "source_id": 20,
+          "restaurant_id": 1,
+          "dish_id": 29,
           "dish": "brussels sprouts",
           "sentiment": "neutral",
           "confidence": 0.0,
@@ -450,33 +552,45 @@
           ]
         },
         {
+          "source_id": 20,
+          "restaurant_id": 1,
+          "dish_id": 30,
           "dish": "chimichurri",
           "sentiment": "positive",
-          "confidence": 0.9153,
+          "confidence": 0.9152637124061584,
           "mentions": 1,
           "evidence": [
             "Skip the shrimp tacos, Brussels sprouts with chimichurri (description sounded promising) and lemonade."
           ]
         },
         {
+          "source_id": 20,
+          "restaurant_id": 1,
+          "dish_id": 16,
           "dish": "cocktails",
           "sentiment": "positive",
-          "confidence": 0.9454,
+          "confidence": 0.9453680515289307,
           "mentions": 1,
           "evidence": [
             "Can't imagine how strong their cocktails are for these prices but the ambiance is..."
           ]
         },
         {
+          "source_id": 20,
+          "restaurant_id": 1,
+          "dish_id": 31,
           "dish": "corn/elote",
           "sentiment": "positive",
-          "confidence": 0.9975,
+          "confidence": 0.9974930286407471,
           "mentions": 1,
           "evidence": [
             "Food was okay: pretty good lobster roll, nice corn/elote, ok veggie burger, yummy sweet potato fries."
           ]
         },
         {
+          "source_id": 20,
+          "restaurant_id": 1,
+          "dish_id": 32,
           "dish": "lemonade",
           "sentiment": "neutral",
           "confidence": 0.0,
@@ -486,33 +600,45 @@
           ]
         },
         {
+          "source_id": 20,
+          "restaurant_id": 1,
+          "dish_id": 33,
           "dish": "lobster roll",
           "sentiment": "positive",
-          "confidence": 0.9971,
+          "confidence": 0.997052788734436,
           "mentions": 1,
           "evidence": [
             "Food was okay: pretty good lobster roll, nice corn/elote, ok veggie burger, yummy sweet potato fries."
           ]
         },
         {
+          "source_id": 20,
+          "restaurant_id": 1,
+          "dish_id": 2,
           "dish": "shrimp tacos",
           "sentiment": "negative",
-          "confidence": 0.9952,
+          "confidence": 0.9951830506324768,
           "mentions": 1,
           "evidence": [
             "Skip the shrimp tacos, Brussels sprouts with chimichurri (description sounded promising) and lemonade."
           ]
         },
         {
+          "source_id": 20,
+          "restaurant_id": 1,
+          "dish_id": 3,
           "dish": "sweet potato fries",
           "sentiment": "positive",
-          "confidence": 0.9977,
+          "confidence": 0.9976574182510376,
           "mentions": 1,
           "evidence": [
             "Food was okay: pretty good lobster roll, nice corn/elote, ok veggie burger, yummy sweet potato fries."
           ]
         },
         {
+          "source_id": 20,
+          "restaurant_id": 1,
+          "dish_id": 34,
           "dish": "veggie burger",
           "sentiment": "neutral",
           "confidence": 0.0,
