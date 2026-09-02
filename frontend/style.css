@@ -1,16 +1,13 @@
 /* ==========================================================================
    DishIt — frontend wireframe
-   Palettes ship as token sets so the visual direction can be chosen from real
-   screens. Pick one, delete the other three and the switcher, and the rest of
-   this file is unchanged.
+   Palette: Saffron & Charcoal, locked in after comparing all four candidates
+   on real screens. Light palette lives on bare :root; dark redefines the same
+   tokens under prefers-color-scheme and under the explicit [data-theme] toggle,
+   so all three viewer states resolve correctly. Every component reads tokens
+   only, never a literal color.
    ========================================================================== */
 
-/* --- Light palettes -------------------------------------------------------
-   Bare :root carries the complete default (saffron) light palette. Every
-   component reads tokens only, never a literal, so themes resolve as a set. */
-
-:root,
-:root[data-palette="saffron"] {
+:root {
   --brand: #E09F3E;
   --brand-ink: #241E17;
   --bg: #FBF7F0;
@@ -25,112 +22,22 @@
   --shadow: 0 1px 2px rgba(36, 30, 23, .05), 0 8px 24px -12px rgba(36, 30, 23, .18);
 }
 
-:root[data-palette="terracotta"] {
-  --brand: #C1502E;
-  --brand-ink: #FFF6EE;
-  --bg: #FAF4EC;
-  --surface: #FFFDF9;
-  --surface-2: #F2E8DA;
-  --ink: #2A211C;
-  --muted: #7D6C60;
-  --line: #E8DCCE;
-  --pos: #2A9D8F;
-  --neg: #9B2226;
-  --split: #7A4E9B;
-  --shadow: 0 1px 2px rgba(42, 33, 28, .05), 0 8px 24px -12px rgba(42, 33, 28, .18);
-}
-
-:root[data-palette="charcoal"] {
-  --brand: #1F1B18;
-  --brand-ink: #F7F3EC;
-  --bg: #F7F3EC;
-  --surface: #FFFFFF;
-  --surface-2: #EFEAE0;
-  --ink: #1F1B18;
-  --muted: #6E665C;
-  --line: #E2DCD1;
-  --pos: #2E7D5B;
-  --neg: #B3261E;
-  --split: #7A4E9B;
-  --shadow: 0 1px 2px rgba(31, 27, 24, .05), 0 8px 24px -12px rgba(31, 27, 24, .18);
-}
-
-:root[data-palette="wine"] {
-  --brand: #6D2E46;
-  --brand-ink: #FBF2F5;
-  --bg: #FAF5F0;
-  --surface: #FFFFFF;
-  --surface-2: #F1E7E2;
-  --ink: #2A1F26;
-  --muted: #7C6B72;
-  --line: #E9DDD8;
-  --pos: #2E7D5B;
-  --neg: #B3261E;
-  --split: #C77D2E;
-  --shadow: 0 1px 2px rgba(42, 31, 38, .05), 0 8px 24px -12px rgba(42, 31, 38, .18);
-}
-
-/* --- Dark palettes, system preference ----------------------------------- */
-
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]),
-  :root:not([data-theme="light"])[data-palette="saffron"] {
+  :root:not([data-theme="light"]) {
     --brand: #E5A94F; --brand-ink: #17140F;
     --bg: #17140F; --surface: #211D17; --surface-2: #2A241C;
     --ink: #F2EBDF; --muted: #A2988A; --line: #332C23;
     --pos: #4FA87F; --neg: #E2685C; --split: #A87FC4;
     --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .7);
   }
-  :root:not([data-theme="light"])[data-palette="terracotta"] {
-    --brand: #DD6A45; --brand-ink: #191310;
-    --bg: #191310; --surface: #231A16; --surface-2: #2D211B;
-    --ink: #F1E7DC; --muted: #A39184; --line: #352922;
-    --pos: #4FBDAF; --neg: #D9615F; --split: #A87FC4;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .7);
-  }
-  :root:not([data-theme="light"])[data-palette="charcoal"] {
-    --brand: #F2EEE6; --brand-ink: #141210;
-    --bg: #141210; --surface: #1E1B18; --surface-2: #27231F;
-    --ink: #F2EEE6; --muted: #9A9186; --line: #2E2A25;
-    --pos: #4FA87F; --neg: #E2685C; --split: #A87FC4;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .7);
-  }
-  :root:not([data-theme="light"])[data-palette="wine"] {
-    --brand: #B5738D; --brand-ink: #171114;
-    --bg: #171114; --surface: #211A1E; --surface-2: #2B2126;
-    --ink: #F2E9EC; --muted: #A08F97; --line: #332830;
-    --pos: #4FA87F; --neg: #E2685C; --split: #DFA05C;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .7);
-  }
 }
 
-/* --- Dark palettes, explicit toggle -------------------------------------- */
-
-:root[data-theme="dark"],
-:root[data-theme="dark"][data-palette="saffron"] {
+:root[data-theme="dark"] {
   --brand: #E5A94F; --brand-ink: #17140F;
   --bg: #17140F; --surface: #211D17; --surface-2: #2A241C;
   --ink: #F2EBDF; --muted: #A2988A; --line: #332C23;
   --pos: #4FA87F; --neg: #E2685C; --split: #A87FC4;
   --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .7);
-}
-:root[data-theme="dark"][data-palette="terracotta"] {
-  --brand: #DD6A45; --brand-ink: #191310;
-  --bg: #191310; --surface: #231A16; --surface-2: #2D211B;
-  --ink: #F1E7DC; --muted: #A39184; --line: #352922;
-  --pos: #4FBDAF; --neg: #D9615F; --split: #A87FC4;
-}
-:root[data-theme="dark"][data-palette="charcoal"] {
-  --brand: #F2EEE6; --brand-ink: #141210;
-  --bg: #141210; --surface: #1E1B18; --surface-2: #27231F;
-  --ink: #F2EEE6; --muted: #9A9186; --line: #2E2A25;
-  --pos: #4FA87F; --neg: #E2685C; --split: #A87FC4;
-}
-:root[data-theme="dark"][data-palette="wine"] {
-  --brand: #B5738D; --brand-ink: #171114;
-  --bg: #171114; --surface: #211A1E; --surface-2: #2B2126;
-  --ink: #F2E9EC; --muted: #A08F97; --line: #332830;
-  --pos: #4FA87F; --neg: #E2685C; --split: #DFA05C;
 }
 
 /* --- Base ---------------------------------------------------------------- */
@@ -276,26 +183,31 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 
 /* --- Hero ---------------------------------------------------------------- */
 
-.hero { padding: 64px 0 44px; }
+.hero {
+  padding: 64px 0 44px;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center;
+}
 .hero h1 {
   font-size: clamp(2.5rem, 6vw, 3.75rem);
   font-weight: 800;
   letter-spacing: -.035em;
   line-height: 1.02;
   max-width: 15ch;
-  margin-bottom: 16px;
+  margin: 0 auto 16px;
 }
 .hero h1 em { font-style: normal; color: var(--brand); }
 .hero p {
   font-size: 1.1875rem;
   color: var(--muted);
   max-width: 54ch;
-  margin: 0 0 28px;
+  margin: 0 auto 28px;
 }
-.hero .search { max-width: 620px; }
+.hero .search { max-width: 620px; width: 100%; }
 .hero-tries {
   display: flex; flex-wrap: wrap; gap: 8px;
   margin-top: 14px; align-items: center;
+  justify-content: center;
 }
 .hero-tries span { font-family: var(--display); font-size: .75rem; color: var(--muted); }
 .chip {
@@ -607,41 +519,20 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 .alsoat-name small { display: block; font-family: var(--body); font-weight: 400; font-size: .8125rem; color: var(--muted); }
 .alsoat-n { font-family: var(--mono); font-size: .75rem; color: var(--muted); }
 
-/* --- Palette switcher ---------------------------------------------------- */
+/* --- Theme toggle ---------------------------------------------------------
+   Palette is locked to Saffron & Charcoal; this just flips light/dark. */
 
-.pal {
+.theme-toggle {
   position: fixed; right: 16px; bottom: 16px; z-index: 80;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 999px;
   box-shadow: var(--shadow);
-  padding: 11px 13px;
-  display: flex; flex-direction: column; gap: 9px;
-  max-width: calc(100vw - 32px);
-}
-.pal-row { display: flex; align-items: center; gap: 7px; }
-.pal-lab {
-  font-family: var(--display); font-size: .625rem; font-weight: 700;
-  letter-spacing: .09em; text-transform: uppercase; color: var(--muted);
-  margin-right: 2px;
-}
-.sw {
-  width: 26px; height: 26px; border-radius: 7px;
-  border: 1px solid var(--line);
-  position: relative;
-}
-.sw[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 2px; }
-.sw-saffron    { background: linear-gradient(135deg, #E09F3E 60%, #FBF7F0 60%); }
-.sw-terracotta { background: linear-gradient(135deg, #C1502E 60%, #FAF4EC 60%); }
-.sw-charcoal   { background: linear-gradient(135deg, #1F1B18 60%, #F7F3EC 60%); }
-.sw-wine       { background: linear-gradient(135deg, #6D2E46 60%, #FAF5F0 60%); }
-.pal-theme {
-  font-family: var(--display); font-size: .75rem; font-weight: 600;
-  border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px;
+  padding: 8px 16px;
+  font-family: var(--display); font-size: .8125rem; font-weight: 600;
   color: var(--muted);
 }
-.pal-theme:hover { color: var(--ink); }
-.pal-name { font-family: var(--mono); font-size: .6875rem; color: var(--muted); }
+.theme-toggle:hover { color: var(--ink); }
 
 /* --- Footer -------------------------------------------------------------- */
 
@@ -662,5 +553,4 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
   .search button { width: 100%; }
   .head-in { flex-wrap: wrap; gap: 12px; }
   .loc { margin-left: 0; }
-  .pal { left: 16px; right: 16px; }
 }

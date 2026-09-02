@@ -438,15 +438,6 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  const pal = t.closest("[data-pal]");
-  if (pal) {
-    document.documentElement.dataset.palette = pal.dataset.pal;
-    document.querySelectorAll("[data-pal]").forEach((b) =>
-      b.setAttribute("aria-pressed", String(b === pal)));
-    $("#pal-name").textContent = pal.dataset.pal[0].toUpperCase() + pal.dataset.pal.slice(1);
-    return;
-  }
-
   if (t.closest("#theme-btn")) {
     const root = document.documentElement;
     const dark = root.dataset.theme === "dark";
@@ -464,7 +455,6 @@ function boot(data) {
   DB = data;
   THRESHOLD = data._threshold || 5;
   DB.byRest = Object.fromEntries(DB.restaurants.map((r) => [r.id, r]));
-  document.documentElement.dataset.palette = "saffron";
   go("home");
 }
 
