@@ -3,13 +3,13 @@
   "_threshold": 5,
 
   "restaurants": [
-    { "id": "r1", "name": "Osteria Novanta",    "neighborhood": "Manhattan Valley",   "cuisine": "Italian",      "cross_street": "108th & Amsterdam", "lat": 40.8009, "lng": -73.9648, "distance_m": 420,  "image": null },
-    { "id": "r2", "name": "Amsterdam Larder",   "neighborhood": "Upper West Side",    "cuisine": "New American", "cross_street": "97th & Amsterdam",  "lat": 40.7947, "lng": -73.9689, "distance_m": 850,  "image": null },
-    { "id": "r3", "name": "Sable & Rye",        "neighborhood": "Morningside Heights","cuisine": "Appetizing",   "cross_street": "110th & Broadway",  "lat": 40.8028, "lng": -73.9662, "distance_m": 260,  "image": null },
-    { "id": "r4", "name": "Han & Sons",         "neighborhood": "Upper West Side",    "cuisine": "Korean",       "cross_street": "103rd & Columbus",  "lat": 40.7981, "lng": -73.9646, "distance_m": 610,  "image": null },
-    { "id": "r5", "name": "La Buena Mesa",      "neighborhood": "Manhattan Valley",   "cuisine": "Mexican",      "cross_street": "106th & Columbus",  "lat": 40.8000, "lng": -73.9615, "distance_m": 540,  "image": null },
-    { "id": "r6", "name": "Trattoria Bellonda", "neighborhood": "Upper West Side",    "cuisine": "Italian",      "cross_street": "95th & Columbus",   "lat": 40.7930, "lng": -73.9700, "distance_m": 1100, "image": null },
-    { "id": "r7", "name": "Amsterdam Pasta Bar","neighborhood": "Upper West Side",    "cuisine": "Italian",      "cross_street": "100th & Amsterdam", "lat": 40.7965, "lng": -73.9673, "distance_m": 700,  "image": null }
+    { "id": "r1", "name": "Osteria Novanta",    "neighborhood": "Manhattan Valley",   "cuisine": "Italian",      "cross_street": "108th & Amsterdam", "lat": 40.8009, "lng": -73.9648, "distance_m": 420,  "image": null, "hours_today": "Open until 10pm" },
+    { "id": "r2", "name": "Amsterdam Larder",   "neighborhood": "Upper West Side",    "cuisine": "New American", "cross_street": "97th & Amsterdam",  "lat": 40.7947, "lng": -73.9689, "distance_m": 850,  "image": null, "hours_today": null },
+    { "id": "r3", "name": "Sable & Rye",        "neighborhood": "Morningside Heights","cuisine": "Appetizing",   "cross_street": "110th & Broadway",  "lat": 40.8028, "lng": -73.9662, "distance_m": 260,  "image": null, "hours_today": "Open until 4pm" },
+    { "id": "r4", "name": "Han & Sons",         "neighborhood": "Upper West Side",    "cuisine": "Korean",       "cross_street": "103rd & Columbus",  "lat": 40.7981, "lng": -73.9646, "distance_m": 610,  "image": null, "hours_today": "Open until 11pm" },
+    { "id": "r5", "name": "La Buena Mesa",      "neighborhood": "Manhattan Valley",   "cuisine": "Mexican",      "cross_street": "106th & Columbus",  "lat": 40.8000, "lng": -73.9615, "distance_m": 540,  "image": null, "hours_today": null },
+    { "id": "r6", "name": "Trattoria Bellonda", "neighborhood": "Upper West Side",    "cuisine": "Italian",      "cross_street": "95th & Columbus",   "lat": 40.7930, "lng": -73.9700, "distance_m": 1100, "image": null, "hours_today": "Closed today" },
+    { "id": "r7", "name": "Amsterdam Pasta Bar","neighborhood": "Upper West Side",    "cuisine": "Italian",      "cross_street": "100th & Amsterdam", "lat": 40.7965, "lng": -73.9673, "distance_m": 700,  "image": null, "hours_today": null }
   ],
 
   "dishes": [

@@ -20,12 +20,14 @@ All responses are JSON. All endpoints are namespaced under `/api/`.
   "lat": 40.8009,
   "lng": -73.9648,
   "distance_m": 420,
-  "image": null
+  "image": null,
+  "hours_today": "Open until 10pm"
 }
 ```
 
-`distance_m` is computed per request from the caller's `lat`/`lng`, not stored.
+`distance_m` is computed per request from the caller's `lat`/`lng`, not stored — **this requires `restaurants` to store `lat`/`lng`**, which the current schema doesn't have yet. The frontend derives an estimated walking time from it (`distance_m ÷ 80 m/min`, ~3 mph) rather than calling a routing API — no `time_min` field needed from the backend, the frontend computes it.
 `image` is nullable — the frontend draws a generated placeholder when it's null, so shipping without photography is fine.
+`hours_today` is nullable — a plain display string (e.g. `"Open until 10pm"`, `"Closed today"`), not a structured schedule. Rendered plainly, not color-coded, since a bare string can't safely be read as open/closed without a real parsed state.
 
 ### Dish
 

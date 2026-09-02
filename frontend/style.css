@@ -406,6 +406,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 .rest-body { display: block; padding: 13px 15px 15px; }
 .rest-name { display: block; font-family: var(--display); font-size: 1rem; font-weight: 700; letter-spacing: -.01em; }
 .rest-meta { display: block; font-size: .8125rem; color: var(--muted); margin-top: 1px; }
+.rest-hours { display: block; font-size: .75rem; color: var(--muted); margin-top: 3px; font-family: var(--mono); }
 .rest-top {
   display: block;
   margin-top: 10px; padding-top: 10px;

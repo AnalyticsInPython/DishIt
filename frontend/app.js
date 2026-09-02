@@ -50,6 +50,15 @@ function haversineMeters(lat1, lng1, lat2, lng2) {
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
+// Straight-line distance ÷ an average walking speed (~80 m/min, ~3 mph) — no
+// routing API, so it reads as "about" a time rather than a turn-by-turn ETA.
+const WALK_M_PER_MIN = 80;
+function distanceLabel(distance_m) {
+  const mi = (distance_m / 1609).toFixed(1);
+  const min = Math.max(1, Math.round(distance_m / WALK_M_PER_MIN));
+  return `${mi} mi · ~${min} min walk`;
+}
+
 /** Requests real browser geolocation and recomputes restaurant distances from
  *  it on success. Always calls back — on denial, timeout, or an unsupported
  *  browser it just leaves the manual location in place, since a location
@@ -213,7 +222,8 @@ function restCard(r) {
     <span class="plate"><span>${esc(r.cuisine)}</span></span>
     <span class="rest-body">
       <span class="rest-name">${esc(r.name)}</span>
-      <span class="rest-meta">${esc(r.neighborhood)} · ${(r.distance_m / 1609).toFixed(1)} mi</span>
+      <span class="rest-meta">${esc(r.neighborhood)} · ${distanceLabel(r.distance_m)}</span>
+      ${r.hours_today ? `<span class="rest-hours">${esc(r.hours_today)}</span>` : ""}
       <span class="rest-top">
         ${top ? `Top dish: <b>${esc(top.name)}</b> · ${top.sentiment.score}%` : "No dishes scored yet"}
       </span>
@@ -362,7 +372,7 @@ function viewRestaurant(id) {
       <div class="detail-head">
         <button class="back" id="back-btn">← Back</button>
         <h2>${esc(r.name)}</h2>
-        <p class="detail-sub">${esc(r.cuisine)} · ${esc(r.neighborhood)} · ${esc(r.cross_street)} · ${(r.distance_m / 1609).toFixed(1)} mi away</p>
+        <p class="detail-sub">${esc(r.cuisine)} · ${esc(r.neighborhood)} · ${esc(r.cross_street)} · ${distanceLabel(r.distance_m)}${r.hours_today ? ` · ${esc(r.hours_today)}` : ""}</p>
       </div>
       ${scored.length
         ? `<p class="section-note">${scored.length} dishes have enough mentions to score, ranked by how often they come up.</p>${grid(dishes, { hideWhere: true })}`
@@ -433,7 +443,7 @@ function openDish(id) {
                 const col = x.sentiment.label === "positive" ? "pos" : x.sentiment.label === "negative" ? "neg" : "split";
                 return `<button class="alsoat-row ${isThis ? "is-this" : ""}" data-dish="${x.id}">
                   <span class="alsoat-pct" style="color:var(--${col})">${x.sentiment.score}%</span>
-                  <span class="alsoat-name">${esc(xr.name)}${isThis ? " — you're here" : ""}<small>${esc(xr.neighborhood)} · ${(xr.distance_m / 1609).toFixed(1)} mi</small></span>
+                  <span class="alsoat-name">${esc(xr.name)}${isThis ? " — you're here" : ""}<small>${esc(xr.neighborhood)} · ${distanceLabel(xr.distance_m)}</small></span>
                   <span class="alsoat-n">${x.mention_count} mentions</span>
                 </button>`;
               }).join("")}
