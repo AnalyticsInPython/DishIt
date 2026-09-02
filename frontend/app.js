@@ -26,6 +26,13 @@ let showNearby = false;
 
 /* --- utilities ----------------------------------------------------------- */
 
+// Inline SVG pin, not an emoji, so it renders identically across platforms
+// and inherits the surrounding text color via currentColor.
+const PIN = `<svg class="pin-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M8 1.5c-2.49 0-4.5 2-4.5 4.46 0 3.34 4.5 8.54 4.5 8.54s4.5-5.2 4.5-8.54c0-2.46-2.01-4.46-4.5-4.46Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+  <circle cx="8" cy="6" r="1.6" stroke="currentColor" stroke-width="1.3"/>
+</svg>`;
+
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -239,7 +246,7 @@ function viewHome() {
     <section class="hero">
       <div class="wrap">
         <h1>Stop guessing <em>what to order.</em></h1>
-        <p>Star ratings tell you whether a restaurant is good. DishIt reads what people say across online restaurant reviews, critic write-ups, and Reddit — then tells you which specific dishes are actually worth ordering.</p>
+        <p>DishIt tells you what people are saying and what dishes are worth ordering.</p>
         <form class="search" id="hero-search">
           <input type="search" id="hero-q" placeholder="Try a dish, a restaurant, or a cuisine" aria-label="Search dishes, restaurants, or cuisines">
           <button type="submit">Search</button>
@@ -247,7 +254,7 @@ function viewHome() {
         <p class="hero-loc">
           ${usingGeo
             ? `Distances from <strong>your location</strong> · <button type="button" id="hero-loc-btn">refresh</button>`
-            : `<button type="button" id="hero-loc-btn">📍 Use my location</button>`}
+            : `<button type="button" id="hero-loc-btn">${PIN} Use my location</button>`}
         </p>
         <div class="hero-tries">
           <span>Try</span>
@@ -281,7 +288,7 @@ function viewHome() {
           ? `<p class="section-note">${DB.restaurants.length} restaurants near ${nearWord}, sorted by distance.</p>
              <div class="grid-r">${[...DB.restaurants].sort((a, b) => a.distance_m - b.distance_m).map(restCard).join("")}</div>`
           : `<p class="section-note">See every restaurant in range, sorted by how close it actually is to you.</p>
-             <button class="nearby-cta" type="button" id="nearby-btn">📍 Show restaurants near me</button>`}
+             <button class="nearby-cta" type="button" id="nearby-btn">${PIN} Show restaurants near me</button>`}
       </div>
     </section>`;
 }
@@ -294,7 +301,10 @@ function viewResults(q) {
   if (!res || !res.primary.length) {
     $("#view").innerHTML = `
       <div class="wrap">
-        <div class="results-head"><h2>No matches for “${esc(q)}”</h2></div>
+        <div class="results-head">
+          <button class="back" id="back-btn">← Home</button>
+          <h2>No matches for “${esc(q)}”</h2>
+        </div>
         <div class="empty">
           <h3>Nothing in range matched that</h3>
           <p>We only cover ${DB.restaurants.length} restaurants near ${usingGeo ? "you" : esc(activeLocation().name)} right now, so plenty of real dishes aren't in here yet.</p>
@@ -316,6 +326,7 @@ function viewResults(q) {
   $("#view").innerHTML = `
     <div class="wrap">
       <div class="results-head">
+        <button class="back" id="back-btn">← Home</button>
         <h2>${esc(q)}</h2>
         <p class="routed">Matched <code>${res.matched_on}</code> — reading this as ${label}, so ${res.result_type} lead.</p>
         <div class="toggle" role="group" aria-label="Result type">
@@ -401,11 +412,15 @@ function openDish(id) {
           ${quotes.length ? `
           <div>
             <div class="block-title">What people said</div>
-            ${quotes.map((q) => `
-              <blockquote class="quote q-${q.sentiment}">
-                <p>${esc(q.text)}</p>
-                <cite>${esc(q.source_label)}</cite>
-              </blockquote>`).join("")}
+            ${quotes.map((q) => {
+              const tag = q.source_url ? "a" : "div";
+              const href = q.source_url ? `href="${esc(q.source_url)}" target="_blank" rel="noopener"` : "";
+              return `
+              <${tag} class="quote q-${q.sentiment}" ${href}>
+                <blockquote><p>${esc(q.text)}</p></blockquote>
+                <cite>${esc(q.source_label)} ${q.source_url ? '<span class="evidence-link">View evidence →</span>' : ""}</cite>
+              </${tag}>`;
+            }).join("")}
           </div>` : ""}
 
           ${elsewhere.length ? `

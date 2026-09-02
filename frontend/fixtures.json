@@ -43,43 +43,43 @@
 
   "quotes": {
     "d1": [
-      { "text": "The pepper actually bites. Most places in this neighborhood serve you buttered noodles and call it cacio e pepe.", "source_type": "reddit",  "source_label": "r/UpperWestSide", "sentiment": "positive" },
-      { "text": "Emulsified properly, which sounds like a low bar until you have had the version down the block.",                  "source_type": "critic",  "source_label": "Neighborhood critic", "sentiment": "positive" },
-      { "text": "Good but a little under-seasoned the night we went.",                                                             "source_type": "google",  "source_label": "Google review", "sentiment": "negative" }
+      { "text": "The pepper actually bites. Most places in this neighborhood serve you buttered noodles and call it cacio e pepe.", "source_type": "reddit",  "source_label": "r/UpperWestSide", "source_url": "#", "sentiment": "positive" },
+      { "text": "Emulsified properly, which sounds like a low bar until you have had the version down the block.",                  "source_type": "critic",  "source_label": "Neighborhood critic", "source_url": "#", "sentiment": "positive" },
+      { "text": "Good but a little under-seasoned the night we went.",                                                             "source_type": "google",  "source_label": "Google review", "source_url": "#", "sentiment": "negative" }
     ],
     "d2": [
-      { "text": "Genuinely the best thing I ate all month. The fish is oily and aggressive and I mean that as praise.",            "source_type": "reddit",  "source_label": "r/AskNYC", "sentiment": "positive" },
-      { "text": "I cannot understand the hype. It is a piece of toast with a tinned fish on it for nineteen dollars.",             "source_type": "reddit",  "source_label": "r/UpperWestSide", "sentiment": "negative" },
-      { "text": "Divisive by design, and the kitchen knows it.",                                                                   "source_type": "critic",  "source_label": "Neighborhood critic", "sentiment": "positive" },
-      { "text": "Way too salty. Sent it back.",                                                                                    "source_type": "google",  "source_label": "Google review", "sentiment": "negative" }
+      { "text": "Genuinely the best thing I ate all month. The fish is oily and aggressive and I mean that as praise.",            "source_type": "reddit",  "source_label": "r/AskNYC", "source_url": "#", "sentiment": "positive" },
+      { "text": "I cannot understand the hype. It is a piece of toast with a tinned fish on it for nineteen dollars.",             "source_type": "reddit",  "source_label": "r/UpperWestSide", "source_url": "#", "sentiment": "negative" },
+      { "text": "Divisive by design, and the kitchen knows it.",                                                                   "source_type": "critic",  "source_label": "Neighborhood critic", "source_url": "#", "sentiment": "positive" },
+      { "text": "Way too salty. Sent it back.",                                                                                    "source_type": "google",  "source_label": "Google review", "source_url": "#", "sentiment": "negative" }
     ],
     "d3": [
-      { "text": "Smoked, not sweet. This is the one thing you order here even if you order nothing else.",                         "source_type": "critic",  "source_label": "Neighborhood critic", "sentiment": "positive" },
-      { "text": "My grandmother would have approved and she approved of almost nothing.",                                          "source_type": "reddit",  "source_label": "r/UpperWestSide", "sentiment": "positive" },
-      { "text": "Consistent every single time for three years.",                                                                   "source_type": "google",  "source_label": "Google review", "sentiment": "positive" }
+      { "text": "Smoked, not sweet. This is the one thing you order here even if you order nothing else.",                         "source_type": "critic",  "source_label": "Neighborhood critic", "source_url": "#", "sentiment": "positive" },
+      { "text": "My grandmother would have approved and she approved of almost nothing.",                                          "source_type": "reddit",  "source_label": "r/UpperWestSide", "source_url": "#", "sentiment": "positive" },
+      { "text": "Consistent every single time for three years.",                                                                   "source_type": "google",  "source_label": "Google review", "source_url": "#", "sentiment": "positive" }
     ],
     "d5": [
-      { "text": "The consomme is the entire point and they give you enough of it.",                                                "source_type": "reddit",  "source_label": "r/AskNYC", "sentiment": "positive" },
-      { "text": "Greasy in the good way. Order two more than you think you need.",                                                 "source_type": "google",  "source_label": "Google review", "sentiment": "positive" },
-      { "text": "Fine, but I have had better for half the price further uptown.",                                                  "source_type": "reddit",  "source_label": "r/UpperWestSide", "sentiment": "negative" }
+      { "text": "The consomme is the entire point and they give you enough of it.",                                                "source_type": "reddit",  "source_label": "r/AskNYC", "source_url": "#", "sentiment": "positive" },
+      { "text": "Greasy in the good way. Order two more than you think you need.",                                                 "source_type": "google",  "source_label": "Google review", "source_url": "#", "sentiment": "positive" },
+      { "text": "Fine, but I have had better for half the price further uptown.",                                                  "source_type": "reddit",  "source_label": "r/UpperWestSide", "source_url": "#", "sentiment": "negative" }
     ],
     "d7": [
-      { "text": "Rich enough that a half portion is the correct order, and they will let you do that.",                            "source_type": "critic",  "source_label": "Neighborhood critic", "sentiment": "positive" },
-      { "text": "I think about this lasagna at work.",                                                                             "source_type": "reddit",  "source_label": "r/UpperWestSide", "sentiment": "positive" }
+      { "text": "Rich enough that a half portion is the correct order, and they will let you do that.",                            "source_type": "critic",  "source_label": "Neighborhood critic", "source_url": "#", "sentiment": "positive" },
+      { "text": "I think about this lasagna at work.",                                                                             "source_type": "reddit",  "source_label": "r/UpperWestSide", "source_url": "#", "sentiment": "positive" }
     ],
     "d13": [
-      { "text": "Soaked all the way through, which is either the point or the problem depending on who you ask.",                  "source_type": "critic",  "source_label": "Neighborhood critic", "sentiment": "positive" },
-      { "text": "Swimming. I could not finish it.",                                                                               "source_type": "google",  "source_label": "Google review", "sentiment": "negative" },
-      { "text": "Best tres leches above 96th and it is not close.",                                                               "source_type": "reddit",  "source_label": "r/AskNYC", "sentiment": "positive" }
+      { "text": "Soaked all the way through, which is either the point or the problem depending on who you ask.",                  "source_type": "critic",  "source_label": "Neighborhood critic", "source_url": "#", "sentiment": "positive" },
+      { "text": "Swimming. I could not finish it.",                                                                               "source_type": "google",  "source_label": "Google review", "source_url": "#", "sentiment": "negative" },
+      { "text": "Best tres leches above 96th and it is not close.",                                                               "source_type": "reddit",  "source_label": "r/AskNYC", "source_url": "#", "sentiment": "positive" }
     ],
     "d15": [
-      { "text": "Doughy. They come out fast because they are not cooked long enough.",                                             "source_type": "reddit",  "source_label": "r/UpperWestSide", "sentiment": "negative" },
-      { "text": "Free with the table and worth exactly that.",                                                                     "source_type": "google",  "source_label": "Google review", "sentiment": "negative" },
-      { "text": "I like them. I am aware I am in the minority here.",                                                              "source_type": "reddit",  "source_label": "r/AskNYC", "sentiment": "positive" }
+      { "text": "Doughy. They come out fast because they are not cooked long enough.",                                             "source_type": "reddit",  "source_label": "r/UpperWestSide", "source_url": "#", "sentiment": "negative" },
+      { "text": "Free with the table and worth exactly that.",                                                                     "source_type": "google",  "source_label": "Google review", "source_url": "#", "sentiment": "negative" },
+      { "text": "I like them. I am aware I am in the minority here.",                                                              "source_type": "reddit",  "source_label": "r/AskNYC", "source_url": "#", "sentiment": "positive" }
     ],
     "d19": [
-      { "text": "Shatteringly crisp and the glaze does not turn the skin soggy on the walk home.",                                 "source_type": "reddit",  "source_label": "r/AskNYC", "sentiment": "positive" },
-      { "text": "Order the large. Every time we order the small we regret it.",                                                    "source_type": "google",  "source_label": "Google review", "sentiment": "positive" }
+      { "text": "Shatteringly crisp and the glaze does not turn the skin soggy on the walk home.",                                 "source_type": "reddit",  "source_label": "r/AskNYC", "source_url": "#", "sentiment": "positive" },
+      { "text": "Order the large. Every time we order the small we regret it.",                                                    "source_type": "google",  "source_label": "Google review", "source_url": "#", "sentiment": "positive" }
     ]
   }
 }

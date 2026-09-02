@@ -152,7 +152,8 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
   white-space: nowrap;
 }
 .loc-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pos); flex: none; }
-.loc button { color: var(--brand); font-family: var(--display); font-weight: 600; font-size: .8125rem; }
+.loc button { color: var(--ink); font-family: var(--display); font-weight: 600; font-size: .8125rem; text-decoration: underline; text-underline-offset: 2px; }
+.loc button:hover { color: var(--muted); }
 
 /* --- Search field -------------------------------------------------------- */
 
@@ -205,13 +206,19 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 }
 .hero .search { max-width: 620px; width: 100%; }
 .hero-loc {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
   font-family: var(--display);
   font-size: .8125rem;
   color: var(--muted);
   margin: 12px 0 0;
 }
-.hero-loc button { color: var(--brand); font-weight: 600; }
-.hero-loc button:hover { text-decoration: underline; }
+.hero-loc button {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--ink); font-weight: 600;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.hero-loc button:hover { color: var(--muted); }
+.pin-icon { width: 13px; height: 13px; flex: none; }
 .hero-tries {
   display: flex; flex-wrap: wrap; gap: 8px;
   margin-top: 14px; align-items: center;
@@ -514,17 +521,25 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 /* Quotes are set in the serif — they are people talking, and the rest of the
    interface is the system counting. */
 .quote {
+  display: block;
   border-left: 2px solid var(--line);
-  padding: 2px 0 2px 14px;
+  padding: 8px 10px 8px 14px;
   margin-bottom: 15px;
+  border-radius: 0 6px 6px 0;
+  color: inherit; text-decoration: none;
 }
+a.quote:hover { background: var(--surface-2); }
 .quote.q-positive { border-left-color: var(--pos); }
 .quote.q-negative { border-left-color: var(--neg); }
+.quote blockquote { margin: 0; }
 .quote p { margin: 0 0 5px; font-size: 1.0625rem; line-height: 1.5; }
 .quote cite {
   font-family: var(--mono); font-size: .6875rem; font-style: normal;
   color: var(--muted); text-transform: uppercase; letter-spacing: .05em;
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
 }
+.evidence-link { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; text-transform: none; letter-spacing: normal; }
+a.quote:hover .evidence-link { color: var(--muted); }
 
 .alsoat { display: flex; flex-direction: column; gap: 2px; }
 .alsoat-row {

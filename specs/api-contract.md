@@ -65,7 +65,7 @@ All responses are JSON. All endpoints are namespaced under `/api/`.
 }
 ```
 
-`source_type` is one of `critic` / `reddit` / `google`. `source_label` is what the UI prints, so it should be human-readable.
+`source_type` is one of `critic` / `reddit` / `google`. `source_label` is what the UI prints, so it should be human-readable. **`source_url` is nullable** — every quote in the dish modal is click-through to its evidence when present; when it's null (e.g. a paywalled critic piece with no public link) the UI renders the quote as plain, non-interactive text instead of silently linking to nothing.
 
 ## Endpoints
 
