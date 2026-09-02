@@ -1,0 +1,1146 @@
+<title>DishIt Wireframe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,600&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --stage:#DFE4E5;
+  --paper:#EEF1F1;
+  --surface:#FFFFFF;
+  --surface-2:#F7F9F9;
+  --ink:#14181A;
+  --ink-2:#464F53;
+  --ink-3:#7C868B;
+  --rule:#D5DBDC;
+  --rule-2:#E6EAEA;
+  --live:#2E5F86;
+  --live-soft:#E3EDF4;
+  --neg-fill:#E9ECEC;
+  --hatch:#8E979B;
+  --shadow:0 1px 2px rgba(20,24,26,.07);
+  --f-display:'Bodoni Moda','Didot',Georgia,'Times New Roman',serif;
+  --f-ui:'Public Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  --f-data:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --stage:#080A0B; --paper:#101314; --surface:#181C1D; --surface-2:#1E2324;
+    --ink:#EDF1F1; --ink-2:#AAB4B7; --ink-3:#79848A; --rule:#2E3537; --rule-2:#232A2B;
+    --live:#8CBBDE; --live-soft:#1A2B37; --neg-fill:#232A2B; --hatch:#69747A;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --stage:#080A0B; --paper:#101314; --surface:#181C1D; --surface-2:#1E2324;
+  --ink:#EDF1F1; --ink-2:#AAB4B7; --ink-3:#79848A; --rule:#2E3537; --rule-2:#232A2B;
+  --live:#8CBBDE; --live-soft:#1A2B37; --neg-fill:#232A2B; --hatch:#69747A;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+body{background:var(--stage);color:var(--ink);font-family:var(--f-ui);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--live);outline-offset:2px;border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- prototype chrome (outside the app) ---------- */
+.chrome{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:9px 16px;
+  border-bottom:1px solid var(--rule);background:var(--paper)}
+.chrome-mark{font-family:var(--f-data);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.chrome-spacer{flex:1}
+.seg{display:flex;border:1px solid var(--rule);border-radius:3px;overflow:hidden;background:var(--surface)}
+.seg button{padding:4px 11px;font-family:var(--f-data);font-size:10.5px;letter-spacing:.06em;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--live);color:#fff}
+.chrome-btn{font-family:var(--f-data);font-size:10.5px;letter-spacing:.06em;color:var(--live);
+  border:1px solid var(--rule);border-radius:3px;padding:4px 11px;background:var(--surface)}
+
+/* ---------- stage + device frame ---------- */
+.stage{display:flex;justify-content:center;padding:16px 16px 20px}
+.frame{container-type:inline-size;width:100%;max-width:1280px;background:var(--paper);
+  border:1px solid var(--rule);border-radius:4px;box-shadow:var(--shadow);
+  height:calc(100vh - 96px);min-height:540px;overflow-y:auto;overflow-x:hidden}
+.frame.phone{max-width:390px;border-radius:16px}
+
+/* ---------- shared type ---------- */
+.eyebrow{font-family:var(--f-data);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.num{font-family:var(--f-data);font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;text-wrap:balance}
+
+/* ---------- app header ---------- */
+.hdr{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surface);
+  border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:20}
+.wordmark{font-family:var(--f-display);font-size:20px;font-weight:600;letter-spacing:-.01em;cursor:pointer;white-space:nowrap}
+.hdr .searchwrap{flex:1;min-width:0}
+.loc-chip{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-family:var(--f-data);
+  font-size:10.5px;color:var(--live);border:1px solid var(--rule);border-radius:3px;padding:5px 9px;background:var(--surface)}
+
+/* ---------- search ---------- */
+.searchwrap{position:relative}
+.searchbox{display:flex;align-items:center;gap:8px;background:var(--surface);
+  border:1px solid var(--rule);border-radius:3px;padding:0 11px}
+.searchbox:focus-within{border-color:var(--live);box-shadow:0 0 0 3px var(--live-soft)}
+.searchbox input{flex:1;min-width:0;border:none;outline:none;background:none;color:var(--ink);
+  font-family:var(--f-ui);font-size:15px;padding:11px 0}
+.searchbox input::placeholder{color:var(--ink-3)}
+.searchbox .ico{color:var(--ink-3);font-size:13px}
+.sugg{position:absolute;left:0;right:0;top:calc(100% + 5px);background:var(--surface);
+  border:1px solid var(--rule);border-radius:3px;box-shadow:0 8px 24px rgba(20,24,26,.13);
+  max-height:340px;overflow-y:auto;z-index:40}
+.sugg-group{padding:7px 12px 3px;border-top:1px solid var(--rule-2)}
+.sugg-group:first-child{border-top:none}
+.sugg-item{display:flex;align-items:baseline;gap:10px;width:100%;text-align:left;padding:8px 12px}
+.sugg-item:hover,.sugg-item.on{background:var(--live-soft)}
+.sugg-item .lbl{flex:1;font-size:14px}
+.sugg-item .meta{font-family:var(--f-data);font-size:10px;color:var(--ink-3)}
+.tag{font-family:var(--f-data);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);border:1px solid var(--rule);border-radius:2px;padding:1px 5px}
+
+/* ---------- chips ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1px solid var(--rule);border-radius:100px;padding:6px 13px;font-size:13px;
+  background:var(--surface);color:var(--ink-2)}
+.chip:hover{border-color:var(--live);color:var(--live)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+
+/* ---------- landing ---------- */
+.hero{padding:44px 20px 30px;text-align:center;background:var(--surface);border-bottom:1px solid var(--rule)}
+.hero .wordmark{font-size:40px;cursor:default}
+.hero .tagline{margin:6px auto 22px;max-width:42ch;color:var(--ink-2);font-size:14.5px;line-height:1.5;text-wrap:balance}
+.hero .searchwrap{max-width:520px;margin:0 auto}
+.hero-loc{margin-top:11px;font-size:13px;color:var(--live)}
+.hero-chips{justify-content:center;margin-top:20px}
+.sec{padding:22px 16px}
+.sec-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.sec-head h2{font-family:var(--f-display);font-size:21px;font-weight:600}
+.rail{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.rail .chip{flex:none}
+.feed{display:grid;gap:11px}
+
+/* ---------- cards ---------- */
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:15px 16px;
+  text-align:left;width:100%;display:block}
+button.card:hover{border-color:var(--live)}
+.card-top{display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+.rname{font-family:var(--f-display);font-size:19px;font-weight:600;letter-spacing:-.01em;line-height:1.2}
+.rmeta{font-family:var(--f-data);font-size:10.5px;color:var(--ink-3);margin-top:4px;letter-spacing:.02em}
+.verdict-line{font-size:13.5px;color:var(--ink-2);margin-top:9px;font-style:italic}
+.verdict-sub{font-family:var(--f-data);font-size:10px;color:var(--ink-3);margin-top:3px;letter-spacing:.04em}
+.dishlist{margin-top:13px;padding-top:11px;border-top:1px solid var(--rule-2);display:grid;gap:12px}
+.dish{display:grid;gap:5px}
+.dish-row{display:flex;align-items:baseline;gap:0}
+.dish-name{font-size:14.5px;font-weight:500}
+.dish.lead .dish-name{font-family:var(--f-display);font-size:17px;font-weight:600}
+.leader{flex:1;min-width:14px;border-bottom:1px dotted var(--hatch);margin:0 7px;transform:translateY(-4px)}
+.dish-mentions{font-family:var(--f-data);font-size:10.5px;color:var(--ink-3);white-space:nowrap}
+.dish-foot{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.pcts{font-family:var(--f-data);font-size:9.5px;letter-spacing:.05em;color:var(--ink-3);white-space:nowrap}
+.also{font-size:12.5px;color:var(--ink-3);margin-top:2px}
+
+/* ---------- the split bar: value + texture, never hue ---------- */
+.bar{display:flex;height:9px;border-radius:1px;overflow:hidden;border:1px solid var(--rule)}
+.seg-pos{background:var(--ink)}
+.seg-mix{background-color:var(--surface-2);
+  background-image:repeating-linear-gradient(45deg,var(--hatch) 0 1.5px,transparent 1.5px 4.5px)}
+.seg-neg{background:var(--neg-fill)}
+.bar-ghost{height:9px;border:1px dashed var(--rule);border-radius:1px;background:none}
+.badge{font-family:var(--f-data);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  border-radius:2px;padding:2px 6px;white-space:nowrap;border:1px solid transparent}
+.b-loved{background:var(--ink);color:var(--paper)}
+.b-divisive{background:none;color:var(--ink);border-color:var(--ink)}
+.b-divisive::before{content:"";display:inline-block;width:7px;height:7px;margin-right:5px;
+  border:1px solid var(--ink);vertical-align:0;
+  background-image:repeating-linear-gradient(45deg,var(--ink) 0 1px,transparent 1px 3px)}
+.b-disliked{background:none;color:var(--ink-2);border-color:var(--rule);border-style:dashed}
+.b-mixed{background:none;color:var(--ink-3);border-color:var(--rule)}
+.b-thin{background:none;color:var(--ink-3);border-color:var(--rule);border-style:dotted}
+.legend{display:flex;gap:13px;flex-wrap:wrap;align-items:center;font-family:var(--f-data);
+  font-size:9.5px;letter-spacing:.06em;color:var(--ink-3)}
+.legend i{display:inline-block;width:15px;height:8px;border:1px solid var(--rule);
+  margin-right:5px;vertical-align:-1px;border-radius:1px}
+
+/* ---------- results ---------- */
+.results-head{padding:16px 16px 12px;background:var(--surface);border-bottom:1px solid var(--rule)}
+.results-title{font-family:var(--f-display);font-size:23px;font-weight:600;letter-spacing:-.01em}
+.results-count{font-family:var(--f-data);font-size:11px;color:var(--ink-3);margin-top:5px;letter-spacing:.04em}
+.active-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-data);font-size:10px;
+  letter-spacing:.05em;background:var(--live-soft);color:var(--live);border-radius:100px;padding:4px 10px}
+.pill button{color:inherit;font-size:12px;line-height:1}
+.toolbar{display:flex;gap:9px;align-items:center;padding:11px 16px;border-bottom:1px solid var(--rule);
+  background:var(--paper);position:sticky;top:65px;z-index:15}
+.toolbar select{font-family:var(--f-data);font-size:11px;color:var(--ink-2);background:var(--surface);
+  border:1px solid var(--rule);border-radius:3px;padding:6px 8px}
+.filter-btn{font-family:var(--f-data);font-size:11px;border:1px solid var(--rule);border-radius:3px;
+  padding:6px 12px;background:var(--surface);color:var(--ink-2)}
+.filter-btn .n{color:var(--live);font-weight:500}
+.body-cols{display:block;padding:16px}
+.rail-filters{display:none}
+.rlist{display:grid;gap:11px}
+.fgroup{margin-bottom:20px}
+.fgroup h3{font-family:var(--f-data);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:9px}
+
+/* ---------- filter sheet (narrow) ---------- */
+.sheet-back{position:fixed;inset:0;background:rgba(10,14,16,.45);z-index:50;display:flex;align-items:flex-end}
+.sheet{background:var(--surface);width:100%;max-height:82vh;overflow-y:auto;padding:18px 16px 24px;
+  border-top-left-radius:10px;border-top-right-radius:10px}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.sheet-head h2{font-family:var(--f-display);font-size:20px;font-weight:600}
+.sheet-foot{display:flex;gap:9px;margin-top:22px;position:sticky;bottom:-24px;background:var(--surface);padding:12px 0}
+.btn-primary{flex:1;background:var(--ink);color:var(--paper);border-radius:3px;padding:12px;font-size:14px;font-weight:600}
+.btn-ghost{border:1px solid var(--rule);border-radius:3px;padding:12px 16px;font-size:14px;color:var(--ink-2)}
+
+/* ---------- modal (location) ---------- */
+.modal-back{position:fixed;inset:0;background:rgba(10,14,16,.45);z-index:60;display:flex;
+  align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:20px;
+  max-width:400px;width:100%;box-shadow:0 18px 50px rgba(10,14,16,.28)}
+.modal h2{font-family:var(--f-display);font-size:20px;font-weight:600;margin-bottom:7px}
+.modal p{color:var(--ink-2);font-size:13.5px;line-height:1.55;margin:0 0 16px}
+.sim-note{font-family:var(--f-data);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-3);border:1px dashed var(--rule);border-radius:2px;padding:3px 7px;display:inline-block;margin-bottom:12px}
+.modal-btns{display:flex;gap:9px;justify-content:flex-end}
+
+/* ---------- restaurant detail ---------- */
+.detail-head{background:var(--surface);border-bottom:1px solid var(--rule);padding:16px}
+.backlink{font-family:var(--f-data);font-size:11px;color:var(--live);margin-bottom:13px;display:inline-block}
+.detail-name{font-family:var(--f-display);font-size:31px;font-weight:600;letter-spacing:-.015em;line-height:1.1}
+.thesis{margin-top:14px;padding:13px 15px;background:var(--surface-2);border-left:2px solid var(--ink);border-radius:0 3px 3px 0}
+.thesis .verdict-line{margin-top:0;font-size:16px;font-style:normal;font-weight:600;color:var(--ink)}
+.menu{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:16px}
+.menu-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;
+  padding-bottom:12px;margin-bottom:15px;border-bottom:1px solid var(--rule-2)}
+.menu-head h2{font-family:var(--f-data);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.menu .dishlist{margin-top:0;padding-top:0;border-top:none;gap:17px}
+details.thin{margin-top:18px;padding-top:14px;border-top:1px solid var(--rule-2)}
+details.thin summary{font-family:var(--f-data);font-size:10.5px;letter-spacing:.06em;color:var(--ink-3);cursor:pointer}
+details.thin .dishlist{margin-top:14px}
+
+/* ---------- empty ---------- */
+.empty{padding:52px 22px;text-align:center;max-width:44ch;margin:0 auto}
+.empty h2{font-family:var(--f-display);font-size:24px;font-weight:600;margin-bottom:9px}
+.empty p{color:var(--ink-2);font-size:14px;line-height:1.6;margin:0 0 20px}
+.footnote{padding:26px 16px 34px;text-align:center;font-family:var(--f-data);font-size:9.5px;
+  line-height:1.7;letter-spacing:.05em;color:var(--ink-3)}
+
+/* ---------- wide layout, driven by the frame's own width ---------- */
+@container (min-width:760px){
+  .hero{padding:64px 20px 44px}
+  .hero .wordmark{font-size:56px}
+  .sec{padding:30px 26px}
+  .feed{grid-template-columns:repeat(3,1fr)}
+  .body-cols{display:grid;grid-template-columns:232px 1fr;gap:24px;padding:22px 26px}
+  .rail-filters{display:block}
+  .filter-btn{display:none}
+  .results-head{padding:24px 26px 18px}
+  .toolbar{padding:11px 26px}
+  .detail-head{padding:26px}
+  .detail-name{font-size:40px}
+  .detail-body{padding:22px 26px 40px;display:grid;grid-template-columns:minmax(0,1fr) 268px;gap:24px;align-items:start}
+  .rlist{gap:12px}
+}
+@container (max-width:759px){
+  .detail-body{padding:16px 16px 34px;display:grid;gap:16px}
+  .hdr .wordmark{font-size:17px}
+}
+</style>
+
+<div class="chrome">
+  <span class="chrome-mark">DishIt &nbsp;/&nbsp; clickable wireframe &nbsp;/&nbsp; mock data</span>
+  <span class="chrome-spacer"></span>
+  <div class="seg" role="group" aria-label="Viewport width">
+    <button id="w-phone" aria-pressed="false">Phone 390</button>
+    <button id="w-desk" aria-pressed="true">Desktop 1280</button>
+  </div>
+  <div class="seg" role="group" aria-label="Theme">
+    <button id="t-light" aria-pressed="false">Light</button>
+    <button id="t-dark" aria-pressed="false">Dark</button>
+    <button id="t-sys" aria-pressed="true">System</button>
+  </div>
+  <button class="chrome-btn" id="reset">Reset session</button>
+</div>
+
+<div class="stage"><div class="frame" id="frame"><div id="app"></div></div></div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   MOCK DATA — every restaurant below is invented. Neighborhoods
+   and cuisines are real Manhattan; the businesses are not, because
+   attaching made-up sentiment to real restaurants would be
+   fabricating reviews about real companies.
+   Dish tuple: [name, mentions, positive%, negative%, mixed%]
+   ============================================================ */
+
+var HOODS = {
+  "Chinatown":[40.7158,-73.9970], "Lower East Side":[40.7180,-73.9880],
+  "East Village":[40.7265,-73.9815], "Nolita":[40.7228,-73.9950],
+  "SoHo":[40.7233,-74.0030], "West Village":[40.7358,-74.0036],
+  "Chelsea":[40.7465,-74.0014], "Flatiron":[40.7401,-73.9903],
+  "Midtown":[40.7549,-73.9840], "Upper West Side":[40.7870,-73.9754]
+};
+
+var RAW = [
+["somtam-row","Somtam Row","East Village",["Thai"],2,[
+  ["Pad Thai",340,89,4,7],["Som Tum",212,84,6,10],["Khao Soi",26,92,2,6],
+  ["Crying Tiger Beef",148,71,12,17],["Pad See Ew",96,66,14,20],
+  ["Tom Yum Goong",134,45,29,26],["Thai Iced Tea",58,77,9,14],["Mango Sticky Rice",11,64,18,18]]],
+["ratchada-9","Ratchada 9","Midtown",["Thai"],1,[
+  ["Pad Thai",188,52,27,21],["Boat Noodle Soup",143,88,5,7],["Papaya Salad",77,69,13,18],
+  ["Basil Fried Rice",112,76,10,14],["Fried Chicken Wings",64,81,8,11],
+  ["Green Curry",91,38,34,28],["Roti",9,78,11,11]]],
+["bangkok-annex","Bangkok Annex","Nolita",["Thai"],2,[
+  ["Pad Thai",127,77,11,12],["Massaman Curry",98,84,7,9],["Larb Gai",71,80,9,11],
+  ["Pad Kee Mao",86,66,18,16],["Tom Kha Gai",59,74,13,13],
+  ["Roti & Curry Dip",24,89,4,7],["Thai Iced Coffee",11,72,14,14]]],
+["lacuna","Lacuna Pasta Bar","West Village",["Italian"],3,[
+  ["Cacio e Pepe",231,86,5,9],["Bucatini all'Amatriciana",164,79,8,13],
+  ["Tagliatelle Bolognese",203,83,6,11],["Burrata & Peach",88,72,12,16],
+  ["Branzino",57,41,31,28],["Tiramisu",119,80,7,13],["House Focaccia",34,90,3,7]]],
+["bocca-nera","Bocca Nera","SoHo",["Italian"],4,[
+  ["Spicy Rigatoni alla Vodka",412,91,3,6],["Cacio e Pepe",268,44,33,23],
+  ["Veal Parmesan",176,68,17,15],["Caesar Salad",71,18,61,21],
+  ["Grilled Octopus",94,55,22,23],["Lemon Semifreddo",42,86,5,9],
+  ["Focaccia di Recco",13,77,8,15],["Whole Branzino",132,39,36,25]]],
+["del-fico","Trattoria Del Fico","Chelsea",["Italian"],2,[
+  ["Margherita Pizza",158,84,6,10],["Rigatoni alla Norma",97,76,10,14],
+  ["Chicken Milanese",121,63,19,18],["Arancini",68,88,4,8],
+  ["Caprese",44,58,21,21],["Affogato",29,81,7,12],["Minestrone",16,42,33,25]]],
+["little-gilda","Little Gilda","SoHo",["Italian","American"],3,[
+  ["Spicy Rigatoni alla Vodka",231,58,24,18],["Chopped Salad",94,68,16,16],
+  ["Roast Chicken",112,44,33,23],["Focaccia",78,86,6,8],
+  ["Espresso Martini",156,73,14,13],["Meatballs",87,79,10,11]]],
+["slice-theory","Slice Theory","Lower East Side",["Pizza","Italian"],1,[
+  ["Pepperoni Slice",287,88,5,7],["Margherita Pizza",196,84,6,10],
+  ["Grandma Slice",148,86,5,9],["Vodka Slice",173,57,25,18],
+  ["Garlic Knots",121,80,9,11],["Sicilian Slice",67,73,13,14],["House Salad",22,31,45,24]]],
+["hoshi","Hoshi Ramen Club","East Village",["Japanese"],2,[
+  ["Tonkotsu Ramen",386,90,4,6],["Spicy Miso Ramen",214,82,7,11],
+  ["Shoyu Ramen",128,71,13,16],["Karaage",167,87,5,8],["Gyoza",143,64,18,18],
+  ["Chashu Don",52,79,9,12],["Vegetarian Ramen",61,36,38,26],["Matcha Soft Serve",12,83,6,11]]],
+["kaiso","Kaiso Omakase","Flatiron",["Japanese"],4,[
+  ["Chef's Omakase, 17 Course",147,93,2,5],["Otoro Nigiri",98,91,3,6],
+  ["Uni Nigiri",76,58,24,18],["A5 Wagyu Nigiri",84,49,29,22],
+  ["Chawanmushi",31,86,5,9],["Sake Pairing",43,72,13,15]]],
+["donburi-nine","Donburi Nine","Midtown",["Japanese"],1,[
+  ["Chicken Katsu Don",134,81,8,11],["Salmon Don",112,77,10,13],
+  ["Beef Gyudon",89,69,14,17],["Miso Soup",41,52,26,22],
+  ["Agedashi Tofu",23,74,12,14],["Genmaicha",8,60,20,20]]],
+["hana-soba","Hana Soba House","SoHo",["Japanese"],2,[
+  ["Duck Soba",143,87,5,8],["Cold Zaru Soba",108,81,8,11],
+  ["Tempura Moriawase",92,72,14,14],["Onigiri",46,78,10,12],
+  ["Soba-yu",18,54,25,21],["Yuzu Sorbet",33,84,7,9]]],
+["mercado-ocho","Mercado Ocho","Lower East Side",["Mexican"],2,[
+  ["Al Pastor Tacos",298,88,5,7],["Birria Quesatacos",256,85,6,9],
+  ["Carnitas Tacos",174,80,9,11],["Elote",132,83,7,10],
+  ["Guacamole & Chips",118,47,31,22],["Michelada",67,61,20,19],
+  ["Tres Leches",38,76,10,14],["Ceviche Tostada",14,71,14,15]]],
+["taqueria-vela","Taqueria Vela","Chelsea",["Mexican"],1,[
+  ["Al Pastor Tacos",143,62,21,17],["Fish Tacos",96,84,7,9],
+  ["Burrito Mojado",118,58,24,18],["Queso Fundido",54,79,9,12],
+  ["Horchata",47,88,4,8],["Nachos",72,20,55,25]]],
+["golden-pearl","Golden Pearl Dim Sum","Chinatown",["Chinese"],2,[
+  ["Har Gow",221,89,4,7],["Siu Mai",198,86,5,9],["Char Siu Bao",176,84,6,10],
+  ["Turnip Cake",84,73,12,15],["Chicken Feet",63,44,32,24],
+  ["Egg Tarts",147,91,3,6],["Congee",39,68,16,16]]],
+["szechuan-ledger","Szechuan Ledger","Chinatown",["Chinese"],2,[
+  ["Mapo Tofu",187,87,6,7],["Dan Dan Noodles",204,82,8,10],
+  ["Chongqing Chicken",156,79,10,11],["Cumin Lamb",143,88,4,8],
+  ["Water-Boiled Fish",97,51,28,21],["Wontons in Chili Oil",128,90,3,7],
+  ["Sweet & Sour Pork",58,22,54,24]]],
+["pho-duong","Pho Duong Street","Chinatown",["Vietnamese"],1,[
+  ["Pho Tai",213,89,4,7],["Bun Bo Hue",134,85,6,9],["Banh Mi",167,82,8,10],
+  ["Goi Cuon",78,76,11,13],["Ca Phe Sua Da",96,91,3,6],
+  ["Bun Cha",54,80,9,11],["Cha Gio",29,67,17,16]]],
+["copper-griddle","The Copper Griddle","West Village",["American"],2,[
+  ["Smash Burger",312,90,4,6],["Buttermilk Pancakes",184,83,7,10],
+  ["Truffle Fries",149,46,32,22],["Fried Chicken Sandwich",167,81,8,11],
+  ["Caesar Salad",73,37,38,25],["Milkshake",92,77,10,13],["Patty Melt",21,86,6,8]]],
+["fulton-vine","Fulton & Vine","Flatiron",["American"],3,[
+  ["Dry-Aged Ribeye",168,84,7,9],["Bone Marrow",94,58,23,19],
+  ["Roast Chicken for Two",121,76,11,13],["Wedge Salad",67,41,33,26],
+  ["Creamed Spinach",52,72,13,15],["Basque Cheesecake",88,89,4,7],["Oysters",43,66,17,17]]],
+["halcyon","Halcyon Diner","Upper West Side",["American"],1,[
+  ["Disco Fries",112,74,13,13],["Western Omelette",78,61,20,19],
+  ["Patty Melt",93,80,9,11],["Blueberry Pancakes",104,68,16,16],
+  ["Matzo Ball Soup",86,85,6,9],["House Salad",71,18,61,21],
+  ["Rice Pudding",19,57,22,21],["Egg Cream",7,71,14,15]]],
+["masala-vault","Masala Vault","Midtown",["Indian"],2,[
+  ["Butter Chicken",243,86,6,8],["Lamb Rogan Josh",137,81,9,10],
+  ["Garlic Naan",198,92,3,5],["Chana Masala",84,70,14,16],
+  ["Samosa Chaat",106,77,11,12],["Vindaloo",91,43,32,25],["Mango Lassi",62,83,7,10]]],
+["chettinad-house","Chettinad House","Lower East Side",["Indian"],2,[
+  ["Masala Dosa",176,88,5,7],["Chettinad Chicken",129,84,7,9],
+  ["Idli Sambar",83,79,10,11],["Butter Chicken",97,54,26,20],
+  ["Uttapam",41,76,11,13],["Filter Coffee",57,90,4,6],["Gulab Jamun",12,68,17,15]]],
+["banchan-society","Banchan Society","Flatiron",["Korean"],2,[
+  ["Bulgogi",164,82,8,10],["Kimchi Jjigae",118,86,6,8],
+  ["Korean Fried Chicken",231,89,4,7],["Japchae",76,71,13,16],
+  ["Tteokbokki",94,48,30,22],["Soondubu",68,80,9,11],["Hotteok",17,84,7,9]]],
+["ssam-standard","Ssam Standard","Nolita",["Korean"],2,[
+  ["Korean Fried Chicken",147,63,20,17],["Pork Belly Ssam",132,85,6,9],
+  ["Bibimbap",108,74,12,14],["Kimchi Pancake",64,78,10,12],
+  ["Galbi",89,81,8,11],["Corn Cheese",53,45,31,24]]],
+["zaatar-ash","Zaatar & Ash","Nolita",["Middle Eastern"],2,[
+  ["Hummus with Lamb",187,90,4,6],["Chicken Shawarma",156,83,7,10],
+  ["Falafel",121,66,18,16],["Muhammara",74,87,5,8],
+  ["Lamb Kofta",98,77,11,12],["Baba Ganoush",61,52,27,21],["Knafeh",44,85,6,9]]],
+["levant-counter","Levant Counter","Upper West Side",["Middle Eastern"],1,[
+  ["Chicken Shawarma",134,79,10,11],["Falafel Wrap",112,84,7,9],
+  ["Fattoush",58,71,14,15],["Lentil Soup",47,76,12,12],
+  ["Baklava",39,68,17,15],["Hummus",93,41,34,25],["Turkish Coffee",10,80,10,10]]],
+["bistro-ampersand","Bistro Ampersand","West Village",["French"],3,[
+  ["Steak Frites",214,85,7,8],["Escargot",87,74,13,13],["Duck Confit",118,81,9,10],
+  ["Soupe a l'Oignon",96,88,4,8],["Frisee aux Lardons",52,47,30,23],
+  ["Tarte Tatin",73,86,6,8],["Moules Mariniere",64,69,15,16]]],
+["cafe-merveille","Cafe Merveille","Upper West Side",["French"],3,[
+  ["Croissant",167,91,3,6],["Quiche Lorraine",84,72,14,14],
+  ["Croque Madame",126,83,7,10],["Nicoise Salad",57,58,23,19],
+  ["Eclair",71,79,10,11],["Onion Soup",48,44,31,25],["Madeleines",14,88,5,7]]]
+];
+
+/* ============================================================
+   DERIVATION — every badge shown to a user is computed from
+   (mentions, pos, neg, mix). Nothing is hand-labelled, so the
+   thresholds below are the single place to argue about tuning.
+   ============================================================ */
+
+var MIN_MENTIONS = 15;
+
+function hashStr(s){var h=0;for(var i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0;}return h;}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
+function nrm(s){return String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+  .replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();}
+
+var DATA = RAW.map(function(r){
+  var h = hashStr(r[0]), c = HOODS[r[2]];
+  return {
+    id:r[0], name:r[1], hood:r[2], cuisines:r[3], price:r[4],
+    lat:c[0] + (((h % 17) - 8) / 4000),
+    lng:c[1] + ((((h >> 5) % 17) - 8) / 4000),
+    dishes:r[5].map(function(d){
+      var sum = d[2] + d[3] + d[4];
+      return {name:d[0], mentions:d[1], pos:d[2]/sum, neg:d[3]/sum, mix:d[4]/sum, rid:r[0]};
+    })
+  };
+});
+
+function verdictFor(d){
+  if(d.mentions < MIN_MENTIONS) return {key:"thin", label:"Not enough data"};
+  if(d.pos >= .75)              return {key:"loved", label:"Loved"};
+  if(d.neg >= .50)              return {key:"disliked", label:"Disliked"};
+  if(d.pos >= .35 && d.neg >= .25) return {key:"divisive", label:"Divisive"};
+  if(d.mix >= .40)              return {key:"divisive", label:"Divisive"};
+  return {key:"mixed", label:"Mixed"};
+}
+function popularityFor(d){
+  if(d.mentions >= 200) return "Very popular";
+  if(d.mentions >= 60)  return "Popular";
+  if(d.mentions >= MIN_MENTIONS) return "Some buzz";
+  return "Rarely discussed";
+}
+function standout(d){ return d.pos * Math.log10(d.mentions + 10); }
+function solidDishes(r){ return r.dishes.filter(function(d){ return d.mentions >= MIN_MENTIONS; }); }
+
+function restaurantVerdict(r){
+  var solid = solidDishes(r), n = solid.length;
+  if(!n) return {line:"Not enough signal yet.", sub:"No dish clears " + MIN_MENTIONS + " mentions"};
+  var byKey = function(k){ return solid.filter(function(d){ return verdictFor(d).key === k; }); };
+  var loved = byKey("loved"), disliked = byKey("disliked"), divisive = byKey("divisive");
+  var line;
+  if(loved.length / n >= .5) line = "Consistently strong — hard to order badly here.";
+  else if(loved.length >= 1 && (divisive.length + disliked.length) >= 2) line = "Hit or miss — order carefully.";
+  else if(loved.length === 1) line = "One standout: the " + loved[0].name + ".";
+  else if(disliked.length / n >= .4) line = "Mostly misses.";
+  else line = "Middling across the board.";
+  return {line:line,
+    sub:loved.length + " worth ordering · " + divisive.length + " divisive · " + disliked.length + " to avoid"};
+}
+
+/* two or three dishes that actually tell the story: the best, the
+   next best, and the one most likely to ruin the meal */
+function highlights(r){
+  var solid = solidDishes(r).slice().sort(function(a,b){ return standout(b) - standout(a); });
+  var out = solid.slice(0,2);
+  var risky = solid.filter(function(d){
+    var k = verdictFor(d).key;
+    return (k === "divisive" || k === "disliked") && out.indexOf(d) < 0;
+  }).sort(function(a,b){ return b.mentions - a.mentions; })[0];
+  if(risky) out.push(risky); else if(solid[2]) out.push(solid[2]);
+  return out;
+}
+
+function walkMin(r){
+  if(!S.location) return null;
+  var c = HOODS[S.location];
+  var dy = (r.lat - c[0]) * 69, dx = (r.lng - c[1]) * 52.4;
+  return Math.max(1, Math.round(Math.sqrt(dx*dx + dy*dy) * 20));
+}
+var PRICE = ["", "$", "$$", "$$$", "$$$$"];
+
+/* ============================================================
+   SEARCH
+   ============================================================ */
+
+var HOOD_LIST = Object.keys(HOODS);
+var HOOD_ALIAS = {"les":"Lower East Side", "uws":"Upper West Side",
+  "ev":"East Village", "wv":"West Village", "lower east":"Lower East Side", "upper west":"Upper West Side"};
+var CUISINES = (function(){
+  var s = {}; DATA.forEach(function(r){ r.cuisines.forEach(function(c){ s[c] = 1; }); });
+  return Object.keys(s).sort();
+})();
+var DISH_NAMES = (function(){
+  var s = {}; DATA.forEach(function(r){ r.dishes.forEach(function(d){ s[d.name] = (s[d.name]||0) + 1; }); });
+  return Object.keys(s).sort();
+})();
+function dishCount(name){
+  var k = nrm(name), n = 0;
+  DATA.forEach(function(r){ if(r.dishes.some(function(d){ return nrm(d.name) === k; })) n++; });
+  return n;
+}
+function matchDish(r, name){
+  var k = nrm(name);
+  return r.dishes.filter(function(d){ return nrm(d.name) === k || nrm(d.name).indexOf(k) >= 0; })
+    .sort(function(a,b){ return b.mentions - a.mentions; })[0] || null;
+}
+
+function resolveQuery(q){
+  var k = nrm(q);
+  if(!k) return null;
+  var hood = HOOD_LIST.filter(function(h){ return nrm(h) === k; })[0] || HOOD_ALIAS[k];
+  if(hood) return {type:"neighborhood", label:hood,
+    list:DATA.filter(function(r){ return r.hood === hood; })};
+  var cu = CUISINES.filter(function(c){ return nrm(c) === k; })[0];
+  if(cu) return {type:"cuisine", label:cu,
+    list:DATA.filter(function(r){ return r.cuisines.indexOf(cu) >= 0; })};
+  var dn = DISH_NAMES.filter(function(d){ return nrm(d) === k; })[0];
+  if(dn) return dishResult(dn);
+  var rex = DATA.filter(function(r){ return nrm(r.name) === k; });
+  if(rex.length) return {type:"restaurant", label:rex[0].name, list:rex};
+  dn = DISH_NAMES.filter(function(d){ return nrm(d).indexOf(k) >= 0; })[0];
+  if(dn) return dishResult(dn);
+  var rp = DATA.filter(function(r){ return nrm(r.name).indexOf(k) >= 0; });
+  if(rp.length) return {type:"restaurant", label:q, list:rp};
+  cu = CUISINES.filter(function(c){ return nrm(c).indexOf(k) >= 0; })[0];
+  if(cu) return {type:"cuisine", label:cu,
+    list:DATA.filter(function(r){ return r.cuisines.indexOf(cu) >= 0; })};
+  hood = HOOD_LIST.filter(function(h){ return nrm(h).indexOf(k) >= 0; })[0];
+  if(hood) return {type:"neighborhood", label:hood,
+    list:DATA.filter(function(r){ return r.hood === hood; })};
+  return {type:"none", label:q, list:[]};
+}
+function dishResult(name){
+  var list = DATA.filter(function(r){ return matchDish(r, name); });
+  return {type:"dish", label:name, dish:name, list:list};
+}
+
+function suggestions(q){
+  var k = nrm(q), out = [];
+  if(!k) return out;
+  function take(arr, type, metaFn){
+    arr.filter(function(v){ return nrm(v).indexOf(k) >= 0; })
+       .sort(function(a,b){ return nrm(a).indexOf(k) - nrm(b).indexOf(k); })
+       .slice(0,3).forEach(function(v){ out.push({type:type, label:v, meta:metaFn(v)}); });
+  }
+  take(DISH_NAMES, "dish", function(v){
+    var n = dishCount(v); return n + (n === 1 ? " restaurant" : " restaurants"); });
+  take(DATA.map(function(r){ return r.name; }), "restaurant", function(v){
+    var r = DATA.filter(function(x){ return x.name === v; })[0];
+    return r.hood + " · " + PRICE[r.price]; });
+  take(CUISINES, "cuisine", function(v){
+    return DATA.filter(function(r){ return r.cuisines.indexOf(v) >= 0; }).length + " restaurants"; });
+  take(HOOD_LIST, "neighborhood", function(v){
+    return DATA.filter(function(r){ return r.hood === v; }).length + " restaurants"; });
+  return out;
+}
+
+/* ============================================================
+   SESSION STATE — no account, so this is all the memory there is
+   ============================================================ */
+
+var KEY = "dishit.wireframe.v1";
+var S = {q:"", sort:"relevance", location:null, recent:[],
+  filters:{hoods:[], cuisines:[], prices:[], verdict:"any", maxWalk:0},
+  ui:{width:"desk", theme:"sys"}};
+var UI = {sheet:false, modal:null, dsort:"talked", sugIdx:-1};
+
+function loadState(){
+  try{
+    var raw = localStorage.getItem(KEY);
+    if(!raw) return;
+    var o = JSON.parse(raw);
+    if(o && typeof o === "object"){
+      if(o.filters) S.filters = Object.assign(S.filters, o.filters);
+      if(o.ui) S.ui = Object.assign(S.ui, o.ui);
+      if(Array.isArray(o.recent)) S.recent = o.recent.slice(0,8);
+      if(typeof o.location === "string" && HOODS[o.location]) S.location = o.location;
+      if(typeof o.sort === "string") S.sort = o.sort;
+    }
+  }catch(e){ /* private window, blocked storage — the app still works */ }
+}
+function saveState(){
+  try{ localStorage.setItem(KEY, JSON.stringify(
+    {filters:S.filters, ui:S.ui, recent:S.recent, location:S.location, sort:S.sort})); }
+  catch(e){}
+}
+function pushRecent(item){
+  S.recent = S.recent.filter(function(x){ return x.href !== item.href; });
+  S.recent.unshift(item);
+  S.recent = S.recent.slice(0,8);
+  saveState();
+}
+
+/* ============================================================
+   COMPONENTS
+   ============================================================ */
+
+var PIN = '<svg width="9" height="11" viewBox="0 0 10 12" aria-hidden="true" focusable="false">'
+ + '<path d="M5 0a5 5 0 00-5 5c0 3.6 5 7 5 7s5-3.4 5-7a5 5 0 00-5-5zm0 6.8A1.8 1.8 0 115 3.2a1.8 1.8 0 010 3.6z" fill="currentColor"/></svg>';
+var MAG = '<svg class="ico" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
+ + '<circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.4"/>'
+ + '<path d="M10.6 10.6L14.6 14.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+
+function barHTML(d){
+  if(d.mentions < MIN_MENTIONS)
+    return '<div class="bar-ghost" role="img" aria-label="Not enough data to score this dish"></div>';
+  var p = Math.round(d.pos*100), m = Math.round(d.mix*100), n = 100 - p - m;
+  return '<div class="bar" role="img" aria-label="' + p + '% positive, ' + m + '% mixed, ' + n + '% negative">'
+   + '<div class="seg-pos" style="width:' + p + '%" title="' + p + '% positive"></div>'
+   + '<div class="seg-mix" style="width:' + m + '%" title="' + m + '% mixed"></div>'
+   + '<div class="seg-neg" style="width:' + n + '%" title="' + n + '% negative"></div></div>';
+}
+function dishHTML(d, lead){
+  var v = verdictFor(d), thin = d.mentions < MIN_MENTIONS;
+  var p = Math.round(d.pos*100), m = Math.round(d.mix*100), n = 100 - p - m;
+  return '<div class="dish' + (lead ? " lead" : "") + '">'
+   + '<div class="dish-row"><span class="dish-name">' + esc(d.name) + '</span>'
+   + '<span class="leader"></span>'
+   + '<span class="dish-mentions num">' + d.mentions + ' mentions</span></div>'
+   + barHTML(d)
+   + '<div class="dish-foot"><span class="badge b-' + v.key + '">' + v.label + '</span>'
+   + (thin ? '' : '<span class="pcts num">' + p + ' POS · ' + m + ' MIX · ' + n + ' NEG</span>')
+   + '<span class="pcts">' + popularityFor(d) + '</span></div></div>';
+}
+function legendHTML(){
+  return '<div class="legend"><span><i class="seg-pos"></i>positive</span>'
+   + '<span><i class="seg-mix"></i>mixed</span>'
+   + '<span><i class="seg-neg"></i>negative</span>'
+   + '<span>under ' + MIN_MENTIONS + ' mentions = unscored</span></div>';
+}
+function metaLine(r, withWalk){
+  var w = withWalk === false ? null : walkMin(r);
+  return esc(r.hood) + ' · ' + esc(r.cuisines.join(", ")) + ' · ' + PRICE[r.price]
+   + (w !== null ? ' · ' + w + ' min walk' : '');
+}
+
+function restaurantCard(r, dishName){
+  var v = restaurantVerdict(r), lead = dishName ? matchDish(r, dishName) : null;
+  var rest = highlights(r).filter(function(d){ return d !== lead; });
+  var body = "";
+  if(lead){
+    body = dishHTML(lead, true);
+    var names = rest.slice(0,3).map(function(d){ return d.name; });
+    if(names.length) body += '<div class="also">Also known for ' + esc(names.join(", ")) + '</div>';
+  } else {
+    body = rest.slice(0,3).map(function(d){ return dishHTML(d, false); }).join("");
+  }
+  return '<button class="card" data-act="go" data-href="#/r/' + r.id + '">'
+   + '<div class="card-top"><div><div class="rname">' + esc(r.name) + '</div>'
+   + '<div class="rmeta num">' + metaLine(r) + '</div></div></div>'
+   + '<div class="verdict-line">' + esc(v.line) + '</div>'
+   + '<div class="verdict-sub">' + esc(v.sub) + '</div>'
+   + '<div class="dishlist">' + body + '</div></button>';
+}
+
+function searchField(q, ph){
+  return '<div class="searchwrap"><div class="searchbox">' + MAG
+   + '<input data-search type="text" autocomplete="off" spellcheck="false" aria-label="Search"'
+   + ' placeholder="' + esc(ph) + '" value="' + esc(q || "") + '"></div>'
+   + '<div class="sugg-host"></div></div>';
+}
+function locChip(){
+  return '<button class="loc-chip" data-act="loc-open">' + PIN + '<span>'
+   + (S.location ? esc(S.location) : "Set location") + '</span></button>';
+}
+function header(q, slim){
+  return '<div class="hdr"><button class="wordmark" data-act="go" data-href="#/">DishIt</button>'
+   + (slim ? '<span class="chrome-spacer"></span>'
+           : searchField(q, "Restaurant, dish, cuisine, or neighborhood"))
+   + locChip() + '</div>';
+}
+
+/* ============================================================
+   VIEWS
+   ============================================================ */
+
+function trendingItems(){
+  var pool = [];
+  DATA.forEach(function(r){
+    if(S.location && walkMin(r) > 25) return;
+    r.dishes.forEach(function(d){ if(d.mentions >= 60) pool.push({d:d, r:r}); });
+  });
+  pool.sort(function(a,b){ return standout(b.d) * b.d.mentions - standout(a.d) * a.d.mentions; });
+  var seen = {}, top = [];
+  pool.forEach(function(x){
+    var k = nrm(x.d.name);
+    if(seen[k]) return; seen[k] = 1; top.push(x);
+  });
+  var out = top.slice(0,5);
+  var div = top.filter(function(x){
+    return verdictFor(x.d).key === "divisive" && out.indexOf(x) < 0;
+  }).sort(function(a,b){ return b.d.mentions - a.d.mentions; })[0];
+  if(div) out.splice(2, 0, div);
+  return out.slice(0,6);
+}
+
+function viewLanding(){
+  var chips = ["Thai","Pad Thai","SoHo","Tonkotsu Ramen","West Village","Al Pastor Tacos","Bocca Nera"];
+  var h = header("", true);
+  h += '<div class="hero"><div class="wordmark">DishIt</div>'
+    + '<p class="tagline">Manhattan restaurants, judged one dish at a time.</p>'
+    + searchField("", "Restaurant, dish, cuisine, or neighborhood")
+    + '<div class="hero-loc">'
+    + (S.location
+        ? 'Walk times from <strong>' + esc(S.location) + '</strong> · <button data-act="loc-open" style="color:var(--live);text-decoration:underline">change</button>'
+        : '<button data-act="loc-open" style="color:var(--live)">' + PIN + ' Use my location</button>')
+    + '</div><div class="chips hero-chips">'
+    + chips.map(function(c){
+        return '<button class="chip" data-act="search" data-q="' + esc(c) + '">' + esc(c) + '</button>';
+      }).join("")
+    + '</div></div>';
+
+  if(S.recent.length){
+    h += '<div class="sec"><div class="sec-head"><span class="eyebrow">Earlier this session</span></div>'
+      + '<div class="rail">' + S.recent.map(function(x){
+          return '<button class="chip" data-act="go" data-href="' + esc(x.href) + '">'
+            + (x.kind === "search" ? MAG + " " : "") + esc(x.label) + '</button>';
+        }).join("") + '</div></div>';
+  }
+
+  var items = trendingItems();
+  h += '<div class="sec"><div class="sec-head"><h2>'
+    + (S.location ? "Trending near " + esc(S.location) : "Trending in Manhattan") + '</h2></div>'
+    + legendHTML()
+    + '<div class="feed" style="margin-top:14px">'
+    + items.map(function(x){
+        return '<button class="card" data-act="go" data-href="#/r/' + x.r.id + '">'
+          + dishHTML(x.d, true)
+          + '<div class="rmeta num" style="margin-top:11px">' + esc(x.r.name) + ' · ' + metaLine(x.r) + '</div>'
+          + '</button>';
+      }).join("")
+    + '</div></div>';
+
+  h += '<div class="footnote">Wireframe · all restaurants, dishes and sentiment figures are invented<br>'
+    + 'No account, no tracking — this session only</div>';
+  return h;
+}
+
+function activeFilterCount(){
+  var f = S.filters;
+  return f.hoods.length + f.cuisines.length + f.prices.length
+    + (f.verdict !== "any" ? 1 : 0) + (f.maxWalk ? 1 : 0);
+}
+function chipRow(group, values, labels){
+  var sel = S.filters[group];
+  return '<div class="chips">' + values.map(function(v, i){
+    var on = sel.indexOf(v) >= 0;
+    return '<button class="chip" aria-pressed="' + on + '" data-act="f-toggle" data-group="' + group
+      + '" data-value="' + esc(v) + '">' + esc(labels ? labels[i] : v) + '</button>';
+  }).join("") + '</div>';
+}
+function filtersHTML(){
+  var f = S.filters;
+  var h = '<div class="fgroup"><h3>Neighborhood</h3>' + chipRow("hoods", HOOD_LIST) + '</div>'
+    + '<div class="fgroup"><h3>Cuisine</h3>' + chipRow("cuisines", CUISINES) + '</div>'
+    + '<div class="fgroup"><h3>Price</h3>' + chipRow("prices", [1,2,3,4], ["$","$$","$$$","$$$$"]) + '</div>'
+    + '<div class="fgroup"><h3>Has a dish that is</h3><div class="chips">'
+    + [["any","Any"],["loved","Loved"],["divisive","Divisive"]].map(function(o){
+        return '<button class="chip" aria-pressed="' + (f.verdict === o[0]) + '" data-act="f-verdict"'
+          + ' data-value="' + o[0] + '">' + o[1] + '</button>';
+      }).join("") + '</div></div>';
+  if(S.location){
+    h += '<div class="fgroup"><h3>Walk from ' + esc(S.location) + '</h3><div class="chips">'
+      + [[0,"Any"],[5,"5 min"],[10,"10 min"],[20,"20 min"],[35,"35 min"]].map(function(o){
+          return '<button class="chip" aria-pressed="' + (f.maxWalk === o[0]) + '" data-act="f-walk"'
+            + ' data-value="' + o[0] + '">' + o[1] + '</button>';
+        }).join("") + '</div></div>';
+  } else {
+    h += '<div class="fgroup"><h3>Walk time</h3><button class="chip" data-act="loc-open">'
+      + PIN + ' Set a location first</button></div>';
+  }
+  return h;
+}
+function applyFilters(list){
+  var f = S.filters;
+  return list.filter(function(r){
+    if(f.hoods.length && f.hoods.indexOf(r.hood) < 0) return false;
+    if(f.cuisines.length && !r.cuisines.some(function(c){ return f.cuisines.indexOf(c) >= 0; })) return false;
+    if(f.prices.length && f.prices.indexOf(r.price) < 0) return false;
+    if(f.verdict !== "any" && !solidDishes(r).some(function(d){ return verdictFor(d).key === f.verdict; })) return false;
+    if(f.maxWalk && S.location && walkMin(r) > f.maxWalk) return false;
+    return true;
+  });
+}
+function bestScore(r, res){
+  if(res && res.dish){ var d = matchDish(r, res.dish); return d ? standout(d) * Math.log10(d.mentions + 10) : 0; }
+  var s = solidDishes(r);
+  if(!s.length) return 0;
+  return Math.max.apply(null, s.map(function(d){ return standout(d) * Math.log10(d.mentions + 10); }));
+}
+function sortList(list, res){
+  var cmp = {
+    relevance:function(a,b){ return bestScore(b,res) - bestScore(a,res); },
+    talked:function(a,b){
+      var sum = function(r){ return r.dishes.reduce(function(t,d){ return t + d.mentions; }, 0); };
+      return sum(b) - sum(a); },
+    loved:function(a,b){
+      var top = function(r){ var s = solidDishes(r);
+        return s.length ? Math.max.apply(null, s.map(function(d){ return d.pos; })) : 0; };
+      return top(b) - top(a); },
+    closest:function(a,b){ return (walkMin(a) || 999) - (walkMin(b) || 999); }
+  }[S.sort];
+  return cmp ? list.slice().sort(cmp) : list.slice();
+}
+
+function viewResults(q){
+  var res = resolveQuery(q);
+  var h = header(q, false);
+  if(!res || res.type === "none"){
+    h += emptyState(q, "Nothing in Manhattan matched that.");
+    return h;
+  }
+  var all = res.list, shown = sortList(applyFilters(all), res);
+  var kindLabel = {dish:"Dish", cuisine:"Cuisine", neighborhood:"Neighborhood", restaurant:"Restaurant"}[res.type];
+
+  h += '<div class="results-head"><span class="eyebrow">' + kindLabel + '</span>'
+    + '<div class="results-title">' + esc(res.label) + '</div>'
+    + '<div class="results-count">' + shown.length + " of " + all.length + " restaurants"
+    + (res.type === "dish" ? " serving it" : "")
+    + (activeFilterCount() ? " · filtered" : "") + '</div>';
+  if(activeFilterCount()){
+    var pills = [];
+    S.filters.hoods.forEach(function(v){ pills.push(["hoods", v, v]); });
+    S.filters.cuisines.forEach(function(v){ pills.push(["cuisines", v, v]); });
+    S.filters.prices.forEach(function(v){ pills.push(["prices", v, PRICE[v]]); });
+    if(S.filters.verdict !== "any") pills.push(["verdict", S.filters.verdict, "Has a " + S.filters.verdict + " dish"]);
+    if(S.filters.maxWalk) pills.push(["maxWalk", S.filters.maxWalk, "Within " + S.filters.maxWalk + " min"]);
+    h += '<div class="active-pills">' + pills.map(function(p){
+        return '<span class="pill">' + esc(p[2]) + '<button data-act="f-remove" data-group="' + p[0]
+          + '" data-value="' + esc(p[1]) + '" aria-label="Remove filter">×</button></span>';
+      }).join("") + '</div>';
+  }
+  h += '</div>';
+
+  h += '<div class="toolbar"><button class="filter-btn" data-act="sheet-open">Filters'
+    + (activeFilterCount() ? ' <span class="n">' + activeFilterCount() + '</span>' : '') + '</button>'
+    + '<select id="sortsel" aria-label="Sort results">'
+    + [["relevance","Best match"],["talked","Most talked about"],["loved","Most loved"],["closest","Closest"]]
+      .map(function(o){
+        var dis = (o[0] === "closest" && !S.location) ? " disabled" : "";
+        return '<option value="' + o[0] + '"' + (S.sort === o[0] ? " selected" : "") + dis + '>' + o[1] + '</option>';
+      }).join("") + '</select></div>';
+
+  h += '<div class="body-cols"><aside class="rail-filters">' + filtersHTML() + '</aside><div>';
+  h += shown.length
+    ? legendHTML() + '<div class="rlist" style="margin-top:13px">'
+        + shown.map(function(r){ return restaurantCard(r, res.dish); }).join("") + '</div>'
+    : emptyState(q, "Your filters ruled out all " + all.length + " matches.", true);
+  h += '</div></div>';
+  return h;
+}
+
+function emptyState(q, msg, filtered){
+  var alt = suggestions(q).slice(0,3);
+  return '<div class="empty"><h2>' + esc(msg) + '</h2>'
+    + '<p>' + (filtered
+        ? "Loosen a filter, or clear them all and start again."
+        : "DishIt covers Manhattan only, and only dishes people actually talk about.") + '</p>'
+    + '<div class="chips" style="justify-content:center">'
+    + (filtered ? '<button class="chip" data-act="f-clear">Clear all filters</button>' : "")
+    + alt.map(function(s){
+        return '<button class="chip" data-act="search" data-q="' + esc(s.label) + '">' + esc(s.label) + '</button>';
+      }).join("")
+    + (alt.length || filtered ? "" : ["Thai","SoHo","Pad Thai"].map(function(c){
+        return '<button class="chip" data-act="search" data-q="' + c + '">' + c + '</button>';
+      }).join(""))
+    + '</div></div>';
+}
+
+function viewDetail(id){
+  var r = DATA.filter(function(x){ return x.id === id; })[0];
+  if(!r) return header("", true) + emptyState("", "That restaurant is not in the wireframe data.");
+  var v = restaurantVerdict(r);
+  var solid = solidDishes(r).slice(), thin = r.dishes.filter(function(d){ return d.mentions < MIN_MENTIONS; });
+  var cmp = {
+    talked:function(a,b){ return b.mentions - a.mentions; },
+    loved:function(a,b){ return b.pos - a.pos; },
+    divisive:function(a,b){ return (b.mix + Math.min(b.pos,b.neg)*2) - (a.mix + Math.min(a.pos,a.neg)*2); }
+  }[UI.dsort];
+  solid.sort(cmp);
+
+  var h = header("", false);
+  h += '<div class="detail-head"><button class="backlink" data-act="back">← Back to results</button>'
+    + '<h1 class="detail-name">' + esc(r.name) + '</h1>'
+    + '<div class="rmeta num">' + metaLine(r) + '</div>'
+    + '<div class="thesis"><div class="verdict-line">' + esc(v.line) + '</div>'
+    + '<div class="verdict-sub">' + esc(v.sub) + '</div></div></div>';
+
+  h += '<div class="detail-body"><div class="menu">'
+    + '<div class="menu-head"><h2>Every dish, ranked</h2>'
+    + '<select id="dsort" aria-label="Sort dishes">'
+    + [["talked","Most talked about"],["loved","Most loved"],["divisive","Most divisive"]].map(function(o){
+        return '<option value="' + o[0] + '"' + (UI.dsort === o[0] ? " selected" : "") + '>' + o[1] + '</option>';
+      }).join("") + '</select></div>'
+    + '<div class="dishlist">' + solid.map(function(d){ return dishHTML(d, false); }).join("") + '</div>';
+  if(thin.length){
+    h += '<details class="thin"><summary>' + thin.length + " dish" + (thin.length > 1 ? "es" : "")
+      + " with not enough data yet</summary>"
+      + '<div class="dishlist">' + thin.map(function(d){ return dishHTML(d, false); }).join("") + '</div></details>';
+  }
+  h += '</div>';
+
+  h += '<aside class="card"><span class="eyebrow">How to read this</span>'
+    + '<div style="margin-top:12px">' + legendHTML() + '</div>'
+    + '<p style="font-size:12.5px;line-height:1.65;color:var(--ink-2);margin:14px 0 0">'
+    + 'Each bar is the share of mentions that read positive, mixed, or negative. '
+    + 'A dish is <strong>divisive</strong> when praise and complaints both run high — '
+    + 'not when opinion is merely lukewarm.</p>'
+    + '<p style="font-size:12.5px;line-height:1.65;color:var(--ink-2);margin:10px 0 0">'
+    + 'Below ' + MIN_MENTIONS + ' mentions we show no verdict at all rather than a confident-looking one.</p>'
+    + '</aside></div>';
+  return h;
+}
+
+/* ============================================================
+   OVERLAYS — rendered outside the device frame so position:fixed
+   resolves against the viewport, not the frame's containment box
+   ============================================================ */
+
+function overlayHTML(){
+  var h = "";
+  if(UI.sheet){
+    h += '<div class="sheet-back" data-act="sheet-close"><div class="sheet" data-stop>'
+      + '<div class="sheet-head"><h2>Filters</h2>'
+      + '<button class="backlink" data-act="sheet-close">Close</button></div>'
+      + filtersHTML()
+      + '<div class="sheet-foot"><button class="btn-ghost" data-act="f-clear">Clear all</button>'
+      + '<button class="btn-primary" data-act="sheet-close">Show results</button></div></div></div>';
+  }
+  if(UI.modal === "permission"){
+    h += '<div class="modal-back" data-act="modal-close"><div class="modal" data-stop role="dialog" aria-modal="true">'
+      + '<span class="sim-note">Simulated browser prompt</span>'
+      + '<h2>Share your location with DishIt?</h2>'
+      + '<p>We use it to sort by walk time and to show what is trending near you. '
+      + 'Nothing is stored beyond this browser session.</p>'
+      + '<div class="modal-btns"><button class="btn-ghost" data-act="loc-deny">Block</button>'
+      + '<button class="btn-primary" style="flex:0 0 auto;padding:12px 20px" data-act="loc-allow">Allow</button></div></div></div>';
+  }
+  if(UI.modal === "picker"){
+    h += '<div class="modal-back" data-act="modal-close"><div class="modal" data-stop role="dialog" aria-modal="true">'
+      + '<h2>Pick a neighborhood</h2>'
+      + '<p>Location is off, so choose where you are starting from and we will work out walk times.</p>'
+      + '<div class="chips">' + HOOD_LIST.map(function(hd){
+          return '<button class="chip" aria-pressed="' + (S.location === hd) + '" data-act="loc-set"'
+            + ' data-value="' + esc(hd) + '">' + esc(hd) + '</button>';
+        }).join("") + '</div>'
+      + '<div class="modal-btns" style="margin-top:18px">'
+      + (S.location ? '<button class="btn-ghost" data-act="loc-clear">Clear location</button>' : "")
+      + '<button class="btn-ghost" data-act="modal-close">Done</button></div></div></div>';
+  }
+  return h;
+}
+
+/* ============================================================
+   ROUTER + RENDER
+   ============================================================ */
+
+var app = document.getElementById("app");
+var frame = document.getElementById("frame");
+var overlay = document.createElement("div");
+document.body.appendChild(overlay);
+var scrollMem = {};
+
+function parseHash(){
+  var raw = location.hash.replace(/^#/, "") || "/";
+  if(raw.indexOf("/search") === 0){
+    var i = raw.indexOf("?q=");
+    return {view:"search", q:i >= 0 ? decodeURIComponent(raw.slice(i + 3)) : ""};
+  }
+  if(raw.indexOf("/r/") === 0) return {view:"detail", id:raw.slice(3)};
+  return {view:"home"};
+}
+function navigate(href){
+  scrollMem[location.hash || "#/"] = frame.scrollTop;
+  if(href === location.hash) render(); else location.hash = href;
+}
+function goSearch(q){
+  if(!nrm(q)) return;
+  navigate("#/search?q=" + encodeURIComponent(q));
+}
+
+function render(){
+  var h = parseHash();
+  if(h.view === "search"){
+    app.innerHTML = viewResults(h.q);
+    if(nrm(h.q)) pushRecent({kind:"search", label:h.q, href:"#/search?q=" + encodeURIComponent(h.q)});
+  } else if(h.view === "detail"){
+    UI.dsort = UI.dsort || "talked";
+    app.innerHTML = viewDetail(h.id);
+    var r = DATA.filter(function(x){ return x.id === h.id; })[0];
+    if(r) pushRecent({kind:"restaurant", label:r.name, href:"#/r/" + r.id});
+  } else {
+    app.innerHTML = viewLanding();
+  }
+  overlay.innerHTML = overlayHTML();
+  wire();
+  frame.scrollTop = scrollMem[location.hash || "#/"] || 0;
+}
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+
+function closeSuggest(){
+  var host = document.querySelector(".sugg-host");
+  if(host) host.innerHTML = "";
+  UI.sugIdx = -1;
+}
+function drawSuggest(q){
+  var host = document.querySelector(".sugg-host");
+  if(!host) return;
+  var items = suggestions(q);
+  if(!items.length){ host.innerHTML = ""; UI.sugIdx = -1; return; }
+  var groups = {}, order = [];
+  items.forEach(function(s){ if(!groups[s.type]){ groups[s.type] = []; order.push(s.type); } groups[s.type].push(s); });
+  var n = -1;
+  host.innerHTML = '<div class="sugg">' + order.map(function(t){
+    return '<div class="sugg-group"><span class="eyebrow">' + t + 's</span></div>'
+      + groups[t].map(function(s){
+          n++;
+          return '<button class="sugg-item" data-sug="' + n + '" data-q="' + esc(s.label) + '">'
+            + '<span class="lbl">' + esc(s.label) + '</span>'
+            + '<span class="meta">' + esc(s.meta) + '</span>'
+            + '<span class="tag">' + t + '</span></button>';
+        }).join("");
+  }).join("") + '</div>';
+  UI.sugIdx = -1;
+}
+function moveSuggest(delta){
+  var nodes = document.querySelectorAll(".sugg-item");
+  if(!nodes.length) return;
+  var i = UI.sugIdx + delta;
+  if(i < 0) i = nodes.length - 1;
+  if(i >= nodes.length) i = 0;
+  UI.sugIdx = i;
+  for(var j = 0; j < nodes.length; j++) nodes[j].classList.toggle("on", j === i);
+}
+
+function wire(){
+  var input = document.querySelector("[data-search]");
+  if(input){
+    input.addEventListener("input", function(){ drawSuggest(input.value); });
+    input.addEventListener("focus", function(){ if(input.value) drawSuggest(input.value); });
+    input.addEventListener("keydown", function(e){
+      if(e.key === "ArrowDown"){ e.preventDefault(); moveSuggest(1); }
+      else if(e.key === "ArrowUp"){ e.preventDefault(); moveSuggest(-1); }
+      else if(e.key === "Escape"){ closeSuggest(); }
+      else if(e.key === "Enter"){
+        var active = document.querySelector(".sugg-item.on");
+        goSearch(active ? active.getAttribute("data-q") : input.value);
+        closeSuggest();
+      }
+    });
+    input.addEventListener("blur", function(){ setTimeout(closeSuggest, 120); });
+  }
+  var sortsel = document.getElementById("sortsel");
+  if(sortsel) sortsel.addEventListener("change", function(){ S.sort = sortsel.value; saveState(); render(); });
+  var dsort = document.getElementById("dsort");
+  if(dsort) dsort.addEventListener("change", function(){ UI.dsort = dsort.value; render(); });
+}
+
+document.addEventListener("mousedown", function(e){
+  var sug = e.target.closest ? e.target.closest(".sugg-item") : null;
+  if(sug){ e.preventDefault(); goSearch(sug.getAttribute("data-q")); closeSuggest(); }
+});
+
+document.addEventListener("click", function(e){
+  var el = e.target.closest ? e.target.closest("[data-act]") : null;
+  if(!el) return;
+  var stop = e.target.closest("[data-stop]");
+  var act = el.getAttribute("data-act");
+  if(stop && !stop.contains(el)) return;   /* click landed inside the sheet/modal, not the backdrop */
+  var val = el.getAttribute("data-value");
+
+  if(act === "go"){ navigate(el.getAttribute("data-href")); return; }
+  if(act === "search"){ goSearch(el.getAttribute("data-q")); return; }
+  if(act === "back"){ history.back(); return; }
+
+  if(act === "loc-open"){ UI.modal = S.location ? "picker" : "permission"; }
+  else if(act === "loc-allow"){ S.location = "SoHo"; UI.modal = null; saveState(); }
+  else if(act === "loc-deny"){ UI.modal = "picker"; }
+  else if(act === "loc-set"){ S.location = val; UI.modal = null; saveState(); }
+  else if(act === "loc-clear"){ S.location = null; S.filters.maxWalk = 0;
+    if(S.sort === "closest") S.sort = "relevance"; UI.modal = null; saveState(); }
+  else if(act === "modal-close"){ UI.modal = null; }
+  else if(act === "sheet-open"){ UI.sheet = true; }
+  else if(act === "sheet-close"){ UI.sheet = false; }
+  else if(act === "f-toggle"){
+    var g = el.getAttribute("data-group");
+    var v = g === "prices" ? Number(val) : val;
+    var i = S.filters[g].indexOf(v);
+    if(i >= 0) S.filters[g].splice(i, 1); else S.filters[g].push(v);
+    saveState();
+  }
+  else if(act === "f-verdict"){ S.filters.verdict = val; saveState(); }
+  else if(act === "f-walk"){ S.filters.maxWalk = Number(val); saveState(); }
+  else if(act === "f-remove"){
+    var gr = el.getAttribute("data-group");
+    if(gr === "verdict") S.filters.verdict = "any";
+    else if(gr === "maxWalk") S.filters.maxWalk = 0;
+    else {
+      var vv = gr === "prices" ? Number(val) : val;
+      S.filters[gr] = S.filters[gr].filter(function(x){ return x !== vv; });
+    }
+    saveState();
+  }
+  else if(act === "f-clear"){
+    S.filters = {hoods:[], cuisines:[], prices:[], verdict:"any", maxWalk:0};
+    saveState();
+  }
+  else return;
+  render();
+});
+
+frame.addEventListener("scroll", function(){ scrollMem[location.hash || "#/"] = frame.scrollTop; }, {passive:true});
+window.addEventListener("hashchange", render);
+
+/* ---------- prototype chrome ---------- */
+function applyChrome(){
+  frame.classList.toggle("phone", S.ui.width === "phone");
+  document.getElementById("w-phone").setAttribute("aria-pressed", S.ui.width === "phone");
+  document.getElementById("w-desk").setAttribute("aria-pressed", S.ui.width !== "phone");
+  if(S.ui.theme === "sys") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", S.ui.theme);
+  ["light","dark","sys"].forEach(function(t){
+    document.getElementById("t-" + t).setAttribute("aria-pressed", S.ui.theme === t);
+  });
+}
+document.getElementById("w-phone").onclick = function(){ S.ui.width = "phone"; saveState(); applyChrome(); };
+document.getElementById("w-desk").onclick  = function(){ S.ui.width = "desk";  saveState(); applyChrome(); };
+["light","dark","sys"].forEach(function(t){
+  document.getElementById("t-" + t).onclick = function(){ S.ui.theme = t; saveState(); applyChrome(); };
+});
+document.getElementById("reset").onclick = function(){
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  S.filters = {hoods:[], cuisines:[], prices:[], verdict:"any", maxWalk:0};
+  S.recent = []; S.location = null; S.sort = "relevance";
+  UI.sheet = false; UI.modal = null; UI.dsort = "talked";
+  scrollMem = {};
+  if(location.hash && location.hash !== "#/") location.hash = "#/"; else render();
+};
+
+loadState();
+applyChrome();
+render();
+</script>
