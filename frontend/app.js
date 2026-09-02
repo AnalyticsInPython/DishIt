@@ -22,7 +22,6 @@ let locIndex = 0;
 // always falls back to the manual location rather than blocking anything.
 let usingGeo = false;
 let geoCoords = null;
-let showNearby = false;
 
 /* --- utilities ----------------------------------------------------------- */
 
@@ -263,8 +262,8 @@ function viewHome() {
         </form>
         <p class="hero-loc">
           ${usingGeo
-            ? `Distances from <strong>your location</strong> · <button type="button" id="hero-loc-btn">refresh</button>`
-            : `<button type="button" id="hero-loc-btn">${PIN} Use my location</button>`}
+            ? `<span>Distances from <strong>your location</strong></span><button class="loc-cta" type="button" id="hero-loc-btn">${PIN} Refresh location</button>`
+            : `<button class="loc-cta" type="button" id="hero-loc-btn">${PIN} Use my location</button>`}
         </p>
         <div class="hero-tries">
           <span>Try</span>
@@ -288,17 +287,6 @@ function viewHome() {
         ${pop[activeTab].length
           ? grid(pop[activeTab])
           : `<div class="empty"><h3>Nothing here yet</h3><p>No dishes in this neighborhood have enough mentions to qualify for this list.</p></div>`}
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="wrap">
-        <div class="section-head"><h2>Restaurants nearby</h2></div>
-        ${showNearby
-          ? `<p class="section-note">${DB.restaurants.length} restaurants near ${nearWord}, sorted by distance.</p>
-             <div class="grid-r">${[...DB.restaurants].sort((a, b) => a.distance_m - b.distance_m).map(restCard).join("")}</div>`
-          : `<p class="section-note">See every restaurant in range, sorted by how close it actually is to you.</p>
-             <button class="nearby-cta" type="button" id="nearby-btn">${PIN} Show restaurants near me</button>`}
       </div>
     </section>`;
 }
@@ -515,14 +503,6 @@ document.addEventListener("click", (e) => {
   if (heroLoc) {
     heroLoc.textContent = "Locating…";
     resolveGeolocation(() => go("home"));
-    return;
-  }
-
-  const nearbyBtn = t.closest("#nearby-btn");
-  if (nearbyBtn) {
-    nearbyBtn.disabled = true;
-    nearbyBtn.textContent = "Locating…";
-    resolveGeolocation(() => { showNearby = true; go("home"); });
     return;
   }
 

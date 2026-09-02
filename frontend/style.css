@@ -206,18 +206,12 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 }
 .hero .search { max-width: 620px; width: 100%; }
 .hero-loc {
-  display: flex; align-items: center; justify-content: center; gap: 6px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
   font-family: var(--display);
   font-size: .8125rem;
   color: var(--muted);
-  margin: 12px 0 0;
+  margin: 14px 0 0;
 }
-.hero-loc button {
-  display: inline-flex; align-items: center; gap: 6px;
-  color: var(--ink); font-weight: 600;
-  text-decoration: underline; text-underline-offset: 2px;
-}
-.hero-loc button:hover { color: var(--muted); }
 .pin-icon { width: 13px; height: 13px; flex: none; }
 .hero-tries {
   display: flex; flex-wrap: wrap; gap: 8px;
@@ -263,17 +257,18 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 
 /* --- Grids --------------------------------------------------------------- */
 
-.nearby-cta {
+.loc-cta {
   display: inline-flex; align-items: center; gap: 8px;
-  font-family: var(--display); font-size: .875rem; font-weight: 600;
+  font-family: var(--display); font-size: .8125rem; font-weight: 600;
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
-  padding: 11px 20px;
+  padding: 9px 16px;
   border-radius: 999px;
+  white-space: nowrap;
 }
-.nearby-cta:hover { border-color: var(--brand); color: var(--brand); }
-.nearby-cta:disabled { opacity: .6; }
+.loc-cta:hover { border-color: var(--brand); color: var(--brand); }
+.loc-cta:disabled { opacity: .6; }
 
 .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); }
 .grid-r { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
