@@ -16,12 +16,50 @@ const LOCATIONS = [
 ];
 let locIndex = 0;
 
+// Manual cycling (header pill) is the demo-safe default — no permission
+// prompt, works offline. Real geolocation is an opt-in upgrade a viewer
+// reaches for via the hero link or the "restaurants near me" button, and
+// always falls back to the manual location rather than blocking anything.
+let usingGeo = false;
+let geoCoords = null;
+let showNearby = false;
+
 /* --- utilities ----------------------------------------------------------- */
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+
+function activeLocation() {
+  return usingGeo && geoCoords ? { name: "Your location", ...geoCoords } : LOCATIONS[locIndex];
+}
+
+function haversineMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+/** Requests real browser geolocation and recomputes restaurant distances from
+ *  it on success. Always calls back — on denial, timeout, or an unsupported
+ *  browser it just leaves the manual location in place, since a location
+ *  upgrade should never be something the rest of the page waits on. */
+function resolveGeolocation(cb) {
+  if (!navigator.geolocation) { cb(false); return; }
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      geoCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      usingGeo = true;
+      DB.restaurants.forEach((r) => { r.distance_m = haversineMeters(geoCoords.lat, geoCoords.lng, r.lat, r.lng); });
+      cb(true);
+    },
+    () => cb(false),
+    { timeout: 6000 }
+  );
+}
 
 /* --- DATA ACCESS ---------------------------------------------------------
    Everything the UI knows about the data goes through these four functions.
@@ -194,15 +232,23 @@ function viewHome() {
   ];
   const current = tabs.find((t) => t[0] === activeTab);
 
+  const loc = activeLocation();
+  const nearWord = usingGeo ? "you" : esc(loc.name);
+
   $("#view").innerHTML = `
     <section class="hero">
       <div class="wrap">
         <h1>Stop guessing <em>what to order.</em></h1>
-        <p>Star ratings tell you whether a restaurant is good. DishIt reads what critics, Reddit, and reviewers actually said about each dish — and tells you which ones are worth it.</p>
+        <p>Star ratings tell you whether a restaurant is good. DishIt reads what people say across online restaurant reviews, critic write-ups, and Reddit — then tells you which specific dishes are actually worth ordering.</p>
         <form class="search" id="hero-search">
           <input type="search" id="hero-q" placeholder="Try a dish, a restaurant, or a cuisine" aria-label="Search dishes, restaurants, or cuisines">
           <button type="submit">Search</button>
         </form>
+        <p class="hero-loc">
+          ${usingGeo
+            ? `Distances from <strong>your location</strong> · <button type="button" id="hero-loc-btn">refresh</button>`
+            : `<button type="button" id="hero-loc-btn">📍 Use my location</button>`}
+        </p>
         <div class="hero-tries">
           <span>Try</span>
           <button class="chip" data-q="cacio e pepe">cacio e pepe</button>
@@ -216,7 +262,7 @@ function viewHome() {
     <section class="section">
       <div class="wrap">
         <div class="section-head">
-          <h2>Popular near ${esc(LOCATIONS[locIndex].name)}</h2>
+          <h2>Popular near ${nearWord}</h2>
           <div class="tabs" role="tablist">
             ${tabs.map((t) => `<button class="tab" role="tab" data-tab="${t[0]}" aria-selected="${t[0] === activeTab}">${t[1]}</button>`).join("")}
           </div>
@@ -231,10 +277,11 @@ function viewHome() {
     <section class="section">
       <div class="wrap">
         <div class="section-head"><h2>Restaurants nearby</h2></div>
-        <p class="section-note">${DB.restaurants.length} restaurants in range, sorted by distance.</p>
-        <div class="grid-r">
-          ${[...DB.restaurants].sort((a, b) => a.distance_m - b.distance_m).map(restCard).join("")}
-        </div>
+        ${showNearby
+          ? `<p class="section-note">${DB.restaurants.length} restaurants near ${nearWord}, sorted by distance.</p>
+             <div class="grid-r">${[...DB.restaurants].sort((a, b) => a.distance_m - b.distance_m).map(restCard).join("")}</div>`
+          : `<p class="section-note">See every restaurant in range, sorted by how close it actually is to you.</p>
+             <button class="nearby-cta" type="button" id="nearby-btn">📍 Show restaurants near me</button>`}
       </div>
     </section>`;
 }
@@ -250,7 +297,7 @@ function viewResults(q) {
         <div class="results-head"><h2>No matches for “${esc(q)}”</h2></div>
         <div class="empty">
           <h3>Nothing in range matched that</h3>
-          <p>We only cover ${DB.restaurants.length} restaurants near ${esc(LOCATIONS[locIndex].name)} right now, so plenty of real dishes aren't in here yet.</p>
+          <p>We only cover ${DB.restaurants.length} restaurants near ${usingGeo ? "you" : esc(activeLocation().name)} right now, so plenty of real dishes aren't in here yet.</p>
           <div class="hero-tries">
             <span>Try</span>
             <button class="chip" data-q="cacio e pepe">cacio e pepe</button>
@@ -392,6 +439,7 @@ function closeDish() { $("#modal-root").innerHTML = ""; }
 function go(view, arg) {
   window.__forceType = null;
   closeDish();
+  $("#loc-name").textContent = activeLocation().name;
   if (view === "results") viewResults(arg);
   else if (view === "restaurant") viewRestaurant(arg);
   else viewHome();
@@ -432,9 +480,24 @@ document.addEventListener("click", (e) => {
   if (t.closest("#back-btn") || t.closest("#home-link")) { e.preventDefault(); go("home"); return; }
 
   if (t.closest("#loc-btn")) {
+    usingGeo = false;
     locIndex = (locIndex + 1) % LOCATIONS.length;
-    $("#loc-name").textContent = LOCATIONS[locIndex].name;
-    viewHome();
+    go("home");
+    return;
+  }
+
+  const heroLoc = t.closest("#hero-loc-btn");
+  if (heroLoc) {
+    heroLoc.textContent = "Locating…";
+    resolveGeolocation(() => go("home"));
+    return;
+  }
+
+  const nearbyBtn = t.closest("#nearby-btn");
+  if (nearbyBtn) {
+    nearbyBtn.disabled = true;
+    nearbyBtn.textContent = "Locating…";
+    resolveGeolocation(() => { showNearby = true; go("home"); });
     return;
   }
 
