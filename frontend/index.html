@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DishIt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="banner">
+  <strong>Wireframe</strong> — sample data, fictional restaurants.
+</div>
+
+<header class="head">
+  <div class="head-in">
+    <a class="logo" href="#" id="home-link"><span class="logo-mark"></span>DishIt</a>
+
+    <form class="search head-search" id="head-search" hidden>
+      <input type="search" id="head-q" placeholder="Search dishes, restaurants, cuisines" aria-label="Search">
+      <button type="submit">Search</button>
+    </form>
+
+    <div class="loc">
+      <span class="loc-dot"></span>
+      <span id="loc-name">Morningside Heights</span>
+      <button type="button" id="loc-btn">Change</button>
+    </div>
+  </div>
+</header>
+
+<main id="view"></main>
+
+<footer class="foot">
+  <div class="wrap">
+    DishIt · dish-level sentiment from critic coverage, Reddit, and review text · ENGI 4503 group project
+  </div>
+</footer>
+
+<div id="modal-root"></div>
+
+<button class="theme-toggle" id="theme-btn" aria-label="Toggle dark mode">Dark</button>
+
+<script src="app.js"></script>
+</body>
+</html>
