@@ -5,11 +5,16 @@ Install the dependencies and spaCy model once:
     python -m spacy download en_core_web_sm
 
 Run the preset example:
-    python dish_sentiment.py
+    python dish_sentiment_calculator.py
+
+Analyze a stored source:
+    python dish_sentiment_calculator.py analyze database.db SOURCE_ID
 """
 
 from __future__ import annotations
 
+import argparse
+import sqlite3
 from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import Callable, Iterable
@@ -52,6 +57,92 @@ class DishEvidence:
     score: float = 0.0
     mentions: int = 0
     contexts: set[str] = field(default_factory=set)
+
+
+def get_source_review(
+    connection: sqlite3.Connection, source_id: int
+) -> tuple[int, str]:
+    """Retrieve the restaurant and review text for an existing source record."""
+    row = connection.execute(
+        "SELECT restaurant_id, raw_text FROM sources WHERE id = ?", (source_id,)
+    ).fetchone()
+    if row is None:
+        raise ValueError(f"No source exists with id {source_id}.")
+    return int(row[0]), str(row[1])
+
+
+def get_menu_items(
+    connection: sqlite3.Connection, restaurant_id: int
+) -> list[str]:
+    """Retrieve restaurant menu items to supplement zero-shot review extraction."""
+    return [
+        str(row[0])
+        for row in connection.execute(
+            """
+            SELECT canonical_name
+            FROM dishes
+            WHERE restaurant_id = ?
+            ORDER BY canonical_name
+            """,
+            (restaurant_id,),
+        )
+    ]
+
+
+def get_or_create_dish(
+    connection: sqlite3.Connection, restaurant_id: int, dish_name: str
+) -> int:
+    """Find a dish by name or save a newly extracted dish for the restaurant."""
+    row = connection.execute(
+        """
+        SELECT id FROM dishes
+        WHERE restaurant_id = ? AND canonical_name = ?
+        """,
+        (restaurant_id, dish_name),
+    ).fetchone()
+    if row is not None:
+        return int(row[0])
+
+    cursor = connection.execute(
+        """
+        INSERT INTO dishes (restaurant_id, canonical_name)
+        VALUES (?, ?)
+        """,
+        (restaurant_id, dish_name),
+    )
+    return int(cursor.lastrowid)
+
+
+def analyze_source(
+    connection: sqlite3.Connection,
+    source_id: int,
+    nlp: Language | None = None,
+    dish_extractor: EntityExtractor | None = None,
+    aspect_sentiment_analyzer: AspectSentimentAnalyzer | None = None,
+) -> list[DishReview]:
+    """Analyze a source row and replace its persisted dish-sentiment mentions."""
+    restaurant_id, review_text = get_source_review(connection, source_id)
+    reviews = analyze_review(
+        review_text,
+        menu_items=get_menu_items(connection, restaurant_id),
+        nlp=nlp,
+        dish_extractor=dish_extractor,
+        aspect_sentiment_analyzer=aspect_sentiment_analyzer,
+    )
+
+    with connection:
+        connection.execute("DELETE FROM mentions WHERE source_id = ?", (source_id,))
+        for review in reviews:
+            dish_id = get_or_create_dish(connection, restaurant_id, review.dish)
+            for context in review.contexts:
+                connection.execute(
+                    """
+                    INSERT INTO mentions (dish_id, source_id, sentiment, quote)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    (dish_id, source_id, review.sentiment, context),
+                )
+    return reviews
 
 
 def load_nlp() -> Language:
@@ -211,7 +302,24 @@ def analyze_review(
 
 
 if __name__ == "__main__":
-    reviews = analyze_review(PRESET_REVIEW)
+    parser = argparse.ArgumentParser(
+        description="Extract dish-level sentiment with pretrained local models."
+    )
+    parser.add_argument(
+        "command", nargs="?", choices=("analyze",), help="Analyze a SQLite source."
+    )
+    parser.add_argument("database", nargs="?", help="Path to the SQLite database.")
+    parser.add_argument("source_id", nargs="?", type=int, help="The sources.id to analyze.")
+    arguments = parser.parse_args()
+
+    if arguments.command:
+        if arguments.database is None or arguments.source_id is None:
+            parser.error("analyze requires DATABASE and SOURCE_ID.")
+        with sqlite3.connect(arguments.database) as connection:
+            reviews = analyze_source(connection, arguments.source_id)
+    else:
+        reviews = analyze_review(PRESET_REVIEW)
+
     for review in reviews:
         contexts = " | ".join(review.contexts)
         print(

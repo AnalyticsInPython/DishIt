@@ -4,9 +4,10 @@ Run after installing requirements and the spaCy English model:
     python3 -m unittest -v
 """
 
+import sqlite3
 import unittest
 
-from dish_sentiment_calculator import analyze_review, load_nlp
+from dish_sentiment_calculator import analyze_review, analyze_source, load_nlp
 
 
 class DishSentimentTests(unittest.TestCase):
@@ -120,6 +121,67 @@ class DishSentimentTests(unittest.TestCase):
 
         self.assertEqual(results["dumplings"].sentiment, "neutral")
         self.assertEqual(results["dumplings"].score, 0)
+
+    def test_analyze_source_uses_stored_menu_and_replaces_mentions(self) -> None:
+        connection = sqlite3.connect(":memory:")
+        connection.executescript(
+            """
+            CREATE TABLE restaurants (id INTEGER PRIMARY KEY, name TEXT NOT NULL);
+            CREATE TABLE sources (
+                id INTEGER PRIMARY KEY,
+                restaurant_id INTEGER NOT NULL,
+                raw_text TEXT NOT NULL
+            );
+            CREATE TABLE dishes (
+                id INTEGER PRIMARY KEY,
+                restaurant_id INTEGER NOT NULL,
+                canonical_name TEXT NOT NULL COLLATE NOCASE,
+                UNIQUE (restaurant_id, canonical_name)
+            );
+            CREATE TABLE mentions (
+                id INTEGER PRIMARY KEY,
+                dish_id INTEGER NOT NULL,
+                source_id INTEGER NOT NULL,
+                sentiment TEXT NOT NULL,
+                quote TEXT NOT NULL,
+                extracted_at TEXT
+            );
+            INSERT INTO restaurants (id, name) VALUES (1, 'Test');
+            INSERT INTO sources (id, restaurant_id, raw_text)
+            VALUES (1, 1, 'The crispy duck was excellent.');
+            INSERT INTO dishes (id, restaurant_id, canonical_name)
+            VALUES (1, 1, 'crispy duck');
+            INSERT INTO mentions (dish_id, source_id, sentiment, quote)
+            VALUES (1, 1, 'neutral', 'outdated result');
+            """
+        )
+        review = "The crispy duck was excellent."
+
+        def generic_extractor(_: str) -> list[dict[str, object]]:
+            start = review.index("duck")
+            return [{"text": "duck", "label": "dish", "start": start, "end": start + 4}]
+
+        reviews = analyze_source(
+            connection,
+            1,
+            nlp=self.nlp,
+            dish_extractor=generic_extractor,
+            aspect_sentiment_analyzer=self.aspect_sentiment_analyzer,
+        )
+
+        self.assertEqual([review.dish for review in reviews], ["crispy duck"])
+        mentions = connection.execute(
+            """
+            SELECT d.canonical_name, m.sentiment, m.quote
+            FROM mentions AS m
+            JOIN dishes AS d ON d.id = m.dish_id
+            WHERE m.source_id = 1
+            """
+        ).fetchall()
+        self.assertEqual(
+            mentions,
+            [("crispy duck", "positive", "The crispy duck was excellent.")],
+        )
 
 
 if __name__ == "__main__":
