@@ -14,9 +14,11 @@ Analyze a stored source:
 from __future__ import annotations
 
 import argparse
+import json
 import sqlite3
 from dataclasses import dataclass, field
 from functools import lru_cache
+from pathlib import Path
 from typing import Callable, Iterable
 
 import spacy
@@ -34,7 +36,7 @@ tiramisu was fine, but it was too sweet for my taste.
 
 GLINER_MODEL = "urchade/gliner_base"
 ABSA_MODEL = "yangheng/deberta-v3-base-absa-v1.1"
-ENTITY_LABELS = ["dish", "food", "menu item", "dessert", "beverage"]
+ENTITY_LABELS = ["specific dish or menu item", "dessert", "named beverage"]
 ENTITY_THRESHOLD = 0.5
 
 EntityExtractor = Callable[[str], list[dict[str, object]]]
@@ -57,6 +59,44 @@ class DishEvidence:
     score: float = 0.0
     mentions: int = 0
     contexts: set[str] = field(default_factory=set)
+
+
+REVIEW_OUTPUT_SCHEMA = """
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE restaurants (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    neighborhood TEXT,
+    cuisine TEXT,
+    source_urls TEXT
+);
+
+CREATE TABLE sources (
+    id INTEGER PRIMARY KEY,
+    restaurant_id INTEGER NOT NULL REFERENCES restaurants(id),
+    source_type TEXT,
+    url TEXT,
+    raw_text TEXT NOT NULL,
+    fetched_at TEXT
+);
+
+CREATE TABLE dishes (
+    id INTEGER PRIMARY KEY,
+    restaurant_id INTEGER NOT NULL REFERENCES restaurants(id),
+    canonical_name TEXT NOT NULL COLLATE NOCASE,
+    UNIQUE (restaurant_id, canonical_name)
+);
+
+CREATE TABLE mentions (
+    id INTEGER PRIMARY KEY,
+    dish_id INTEGER NOT NULL REFERENCES dishes(id),
+    source_id INTEGER NOT NULL REFERENCES sources(id),
+    sentiment TEXT NOT NULL,
+    quote TEXT NOT NULL,
+    extracted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+"""
 
 
 def get_source_review(
@@ -121,15 +161,15 @@ def analyze_source(
     aspect_sentiment_analyzer: AspectSentimentAnalyzer | None = None,
 ) -> list[DishReview]:
     """Analyze a source row and replace its persisted dish-sentiment mentions."""
-    restaurant_id, review_text = get_source_review(connection, source_id)
-    reviews = analyze_review(
-        review_text,
-        menu_items=get_menu_items(connection, restaurant_id),
+    reviews = analyze_source_review(
+        connection,
+        source_id,
         nlp=nlp,
         dish_extractor=dish_extractor,
         aspect_sentiment_analyzer=aspect_sentiment_analyzer,
     )
 
+    restaurant_id, _ = get_source_review(connection, source_id)
     with connection:
         connection.execute("DELETE FROM mentions WHERE source_id = ?", (source_id,))
         for review in reviews:
@@ -143,6 +183,137 @@ def analyze_source(
                     (dish_id, source_id, review.sentiment, context),
                 )
     return reviews
+
+
+def analyze_source_review(
+    connection: sqlite3.Connection,
+    source_id: int,
+    nlp: Language | None = None,
+    dish_extractor: EntityExtractor | None = None,
+    aspect_sentiment_analyzer: AspectSentimentAnalyzer | None = None,
+) -> list[DishReview]:
+    """Analyze an existing source without writing to its input database."""
+    restaurant_id, review_text = get_source_review(connection, source_id)
+    return analyze_review(
+        review_text,
+        menu_items=get_menu_items(connection, restaurant_id),
+        nlp=nlp,
+        dish_extractor=dish_extractor,
+        aspect_sentiment_analyzer=aspect_sentiment_analyzer,
+    )
+
+
+def analyze_all_sources(
+    connection: sqlite3.Connection,
+    nlp: Language | None = None,
+    dish_extractor: EntityExtractor | None = None,
+    aspect_sentiment_analyzer: AspectSentimentAnalyzer | None = None,
+) -> dict[int, list[DishReview]]:
+    """Analyze every stored source and persist its dish-sentiment mentions."""
+    source_ids = [
+        int(row[0]) for row in connection.execute("SELECT id FROM sources ORDER BY id")
+    ]
+    return {
+        source_id: analyze_source(
+            connection,
+            source_id,
+            nlp=nlp,
+            dish_extractor=dish_extractor,
+            aspect_sentiment_analyzer=aspect_sentiment_analyzer,
+        )
+        for source_id in source_ids
+    }
+
+
+def build_manual_review_outputs(
+    input_database: Path,
+    output_database: Path,
+    output_json: Path,
+    nlp: Language | None = None,
+    dish_extractor: EntityExtractor | None = None,
+    aspect_sentiment_analyzer: AspectSentimentAnalyzer | None = None,
+) -> None:
+    """Create clean SQLite and JSON exports for manual dish-sentiment review."""
+    if output_database.exists() or output_json.exists():
+        raise FileExistsError("Review output paths must not already exist.")
+
+    with sqlite3.connect(input_database) as input_connection:
+        input_connection.row_factory = sqlite3.Row
+        restaurant_rows = input_connection.execute(
+            "SELECT id, name, neighborhood, cuisine, source_urls FROM restaurants"
+        ).fetchall()
+        source_rows = input_connection.execute(
+            """
+            SELECT id, restaurant_id, source_type, url, raw_text, fetched_at
+            FROM sources
+            ORDER BY id
+            """
+        ).fetchall()
+        source_reviews = {
+            int(source["id"]): analyze_source_review(
+                input_connection,
+                int(source["id"]),
+                nlp=nlp,
+                dish_extractor=dish_extractor,
+                aspect_sentiment_analyzer=aspect_sentiment_analyzer,
+            )
+            for source in source_rows
+        }
+
+    review_payload = {
+        "restaurants": [dict(restaurant) for restaurant in restaurant_rows],
+        "reviews": [
+            {
+                "source_id": source["id"],
+                "restaurant_id": source["restaurant_id"],
+                "review_text": source["raw_text"],
+                "dish_sentiment": [
+                    {
+                        "dish": review.dish,
+                        "sentiment": review.sentiment,
+                        "confidence": round(abs(review.score), 4),
+                        "mentions": review.mentions,
+                        "evidence": list(review.contexts),
+                    }
+                    for review in source_reviews[int(source["id"])]
+                ],
+            }
+            for source in source_rows
+        ],
+    }
+    output_json.write_text(json.dumps(review_payload, indent=2) + "\n", encoding="utf-8")
+
+    with sqlite3.connect(output_database) as output_connection:
+        output_connection.executescript(REVIEW_OUTPUT_SCHEMA)
+        with output_connection:
+            output_connection.executemany(
+                """
+                INSERT INTO restaurants (id, name, neighborhood, cuisine, source_urls)
+                VALUES (:id, :name, :neighborhood, :cuisine, :source_urls)
+                """,
+                restaurant_rows,
+            )
+            output_connection.executemany(
+                """
+                INSERT INTO sources (
+                    id, restaurant_id, source_type, url, raw_text, fetched_at
+                )
+                VALUES (:id, :restaurant_id, :source_type, :url, :raw_text, :fetched_at)
+                """,
+                source_rows,
+            )
+            for source in source_rows:
+                restaurant_id = int(source["restaurant_id"])
+                for review in source_reviews[int(source["id"])]:
+                    dish_id = get_or_create_dish(output_connection, restaurant_id, review.dish)
+                    for context in review.contexts:
+                        output_connection.execute(
+                            """
+                            INSERT INTO mentions (dish_id, source_id, sentiment, quote)
+                            VALUES (?, ?, ?, ?)
+                            """,
+                            (dish_id, source["id"], review.sentiment, context),
+                        )
 
 
 def load_nlp() -> Language:
@@ -306,17 +477,58 @@ if __name__ == "__main__":
         description="Extract dish-level sentiment with pretrained local models."
     )
     parser.add_argument(
-        "command", nargs="?", choices=("analyze",), help="Analyze a SQLite source."
+        "command",
+        nargs="?",
+        choices=("analyze", "analyze-all", "review"),
+        help="Analyze one/all sources or create manual-review exports.",
     )
     parser.add_argument("database", nargs="?", help="Path to the SQLite database.")
-    parser.add_argument("source_id", nargs="?", type=int, help="The sources.id to analyze.")
+    parser.add_argument(
+        "target",
+        nargs="?",
+        help="The sources.id for analyze, or output SQLite path for review.",
+    )
+    parser.add_argument(
+        "output_json",
+        nargs="?",
+        help="JSON output path for the review command.",
+    )
     arguments = parser.parse_args()
 
-    if arguments.command:
-        if arguments.database is None or arguments.source_id is None:
+    if arguments.command == "analyze":
+        if arguments.database is None or arguments.target is None:
             parser.error("analyze requires DATABASE and SOURCE_ID.")
+        try:
+            source_id = int(arguments.target)
+        except ValueError:
+            parser.error("SOURCE_ID must be an integer.")
         with sqlite3.connect(arguments.database) as connection:
-            reviews = analyze_source(connection, arguments.source_id)
+            reviews = analyze_source(connection, source_id)
+    elif arguments.command == "analyze-all":
+        if arguments.database is None or arguments.target is not None:
+            parser.error("analyze-all requires only DATABASE.")
+        with sqlite3.connect(arguments.database) as connection:
+            all_reviews = analyze_all_sources(connection)
+        reviews = [
+            review for source_reviews in all_reviews.values() for review in source_reviews
+        ]
+    elif arguments.command == "review":
+        if (
+            arguments.database is None
+            or arguments.target is None
+            or arguments.output_json is None
+        ):
+            parser.error("review requires INPUT_DATABASE OUTPUT_DATABASE OUTPUT_JSON.")
+        build_manual_review_outputs(
+            Path(arguments.database),
+            Path(arguments.target),
+            Path(arguments.output_json),
+        )
+        print(
+            f"Wrote manual-review exports to {arguments.target} and "
+            f"{arguments.output_json}."
+        )
+        raise SystemExit(0)
     else:
         reviews = analyze_review(PRESET_REVIEW)
 

@@ -4,10 +4,19 @@ Run after installing requirements and the spaCy English model:
     python3 -m unittest -v
 """
 
+import json
 import sqlite3
+import tempfile
 import unittest
+from pathlib import Path
 
-from dish_sentiment_calculator import analyze_review, analyze_source, load_nlp
+from dish_sentiment_calculator import (
+    analyze_all_sources,
+    analyze_review,
+    analyze_source,
+    build_manual_review_outputs,
+    load_nlp,
+)
 
 
 class DishSentimentTests(unittest.TestCase):
@@ -28,7 +37,7 @@ class DishSentimentTests(unittest.TestCase):
         return [
             {
                 "text": dish,
-                "label": "dish",
+                "label": "specific dish or menu item",
                 "start": text.lower().index(dish),
                 "end": text.lower().index(dish) + len(dish),
             }
@@ -103,7 +112,14 @@ class DishSentimentTests(unittest.TestCase):
 
         def generic_extractor(_: str) -> list[dict[str, object]]:
             start = review.index("duck")
-            return [{"text": "duck", "label": "dish", "start": start, "end": start + 4}]
+            return [
+                {
+                    "text": "duck",
+                    "label": "specific dish or menu item",
+                    "start": start,
+                    "end": start + 4,
+                }
+            ]
 
         results = analyze_review(
             review,
@@ -159,7 +175,14 @@ class DishSentimentTests(unittest.TestCase):
 
         def generic_extractor(_: str) -> list[dict[str, object]]:
             start = review.index("duck")
-            return [{"text": "duck", "label": "dish", "start": start, "end": start + 4}]
+            return [
+                {
+                    "text": "duck",
+                    "label": "specific dish or menu item",
+                    "start": start,
+                    "end": start + 4,
+                }
+            ]
 
         reviews = analyze_source(
             connection,
@@ -182,6 +205,104 @@ class DishSentimentTests(unittest.TestCase):
             mentions,
             [("crispy duck", "positive", "The crispy duck was excellent.")],
         )
+
+    def test_analyze_all_sources_persists_each_source(self) -> None:
+        connection = sqlite3.connect(":memory:")
+        connection.executescript(
+            """
+            CREATE TABLE sources (
+                id INTEGER PRIMARY KEY, restaurant_id INTEGER NOT NULL, raw_text TEXT NOT NULL
+            );
+            CREATE TABLE dishes (
+                id INTEGER PRIMARY KEY, restaurant_id INTEGER NOT NULL,
+                canonical_name TEXT NOT NULL COLLATE NOCASE,
+                UNIQUE (restaurant_id, canonical_name)
+            );
+            CREATE TABLE mentions (
+                id INTEGER PRIMARY KEY, dish_id INTEGER NOT NULL, source_id INTEGER NOT NULL,
+                sentiment TEXT NOT NULL, quote TEXT NOT NULL, extracted_at TEXT
+            );
+            INSERT INTO sources (id, restaurant_id, raw_text)
+            VALUES
+                (1, 1, 'The steak was tender.'),
+                (2, 1, 'The pasta was bland.');
+            """
+        )
+
+        results = analyze_all_sources(
+            connection,
+            nlp=self.nlp,
+            dish_extractor=self.dish_extractor,
+            aspect_sentiment_analyzer=self.aspect_sentiment_analyzer,
+        )
+
+        self.assertEqual(set(results), {1, 2})
+        self.assertEqual(
+            connection.execute("SELECT COUNT(*) FROM mentions").fetchone()[0], 2
+        )
+
+    def test_manual_review_exports_are_clean_and_persisted(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            input_database = Path(directory) / "input.sqlite3"
+            output_database = Path(directory) / "review.sqlite3"
+            output_json = Path(directory) / "review.json"
+            with sqlite3.connect(input_database) as connection:
+                connection.executescript(
+                    """
+                    CREATE TABLE restaurants (
+                        id INTEGER PRIMARY KEY, name TEXT NOT NULL,
+                        neighborhood TEXT, cuisine TEXT, source_urls TEXT
+                    );
+                    CREATE TABLE sources (
+                        id INTEGER PRIMARY KEY, restaurant_id INTEGER NOT NULL,
+                        source_type TEXT, url TEXT, raw_text TEXT NOT NULL, fetched_at TEXT
+                    );
+                    CREATE TABLE dishes (
+                        id INTEGER PRIMARY KEY, restaurant_id INTEGER NOT NULL,
+                        canonical_name TEXT NOT NULL COLLATE NOCASE,
+                        UNIQUE (restaurant_id, canonical_name)
+                    );
+                    CREATE TABLE mentions (
+                        id INTEGER PRIMARY KEY, dish_id INTEGER NOT NULL, source_id INTEGER NOT NULL,
+                        sentiment TEXT NOT NULL, quote TEXT NOT NULL, extracted_at TEXT
+                    );
+                    INSERT INTO restaurants (id, name) VALUES (1, 'Test');
+                    INSERT INTO sources (id, restaurant_id, raw_text)
+                    VALUES (1, 1, 'The crispy duck was excellent.');
+                    INSERT INTO dishes (id, restaurant_id, canonical_name)
+                    VALUES (1, 1, 'crispy duck');
+                    """
+                )
+
+            def generic_extractor(_: str) -> list[dict[str, object]]:
+                return [{"label": "specific dish or menu item", "start": 11, "end": 15}]
+
+            build_manual_review_outputs(
+                input_database,
+                output_database,
+                output_json,
+                nlp=self.nlp,
+                dish_extractor=generic_extractor,
+                aspect_sentiment_analyzer=self.aspect_sentiment_analyzer,
+            )
+
+            self.assertTrue(output_json.exists())
+            payload = json.loads(output_json.read_text(encoding="utf-8"))
+            self.assertEqual(payload["reviews"][0]["source_id"], 1)
+            self.assertEqual(
+                payload["reviews"][0]["dish_sentiment"][0]["dish"], "crispy duck"
+            )
+            with sqlite3.connect(output_database) as connection:
+                self.assertEqual(
+                    connection.execute("SELECT canonical_name FROM dishes").fetchall(),
+                    [("crispy duck",)],
+                )
+                self.assertEqual(
+                    connection.execute(
+                        "SELECT sentiment FROM mentions"
+                    ).fetchall(),
+                    [("positive",)],
+                )
 
 
 if __name__ == "__main__":
