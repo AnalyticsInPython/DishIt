@@ -26,10 +26,9 @@ Pull from review sites (Google, Reddit, Beli) as well as from food critic sites 
 
 | Table | Purpose | Key fields |
 |---|---|---|
-| `restaurants` | One row per restaurant in scope | id, name, neighborhood, cuisine, source_urls |
-| `dishes` | Canonical dish entities, deduplicated per restaurant | id, restaurant_id, canonical_name |
-| `mentions` | One row per extracted mention of a dish in a piece of text | id, dish_id, source_id, sentiment, quote, extracted_at |
-| `sources` | The raw text unit a mention came from | id, restaurant_id, source_type (critic/reddit/yelp/google), url, raw_text, fetched_at |
+| `restaurants` | One row per restaurant in scope | id, name, neighborhood, cuisine, distance to user (dynamically updated), hours open today (can drop if complicated), source_urls |
+| `dishes` | Canonical dish entities, deduplicated per restaurant | id, restaurant_id, canonical_name, sentiment |
+| `reviews` | The raw text unit a mention came from | id, restaurant_id, dish_id, source_type (critic/reddit/yelp/google), url, raw_text, fetched_at |
 
 ## 5. Group Members
 
