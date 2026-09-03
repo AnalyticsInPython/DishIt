@@ -20,13 +20,14 @@ instead of forking it.
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import sqlite3
 from collections.abc import Iterator
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SEED_DB = ROOT / "Data Files for Testing" / "Baylander_Manual_Review_by_dish.sqlite3"
+DEFAULT_SEED_DB = ROOT / "Data Files for Testing" / "Baylander_Manual_Review_by_dish.sqlite3"
 FIXTURES_JSON = ROOT / "frontend" / "fixtures.json"
 WORKING_DB = ROOT / "backend" / "data" / "dishit.db"
 
@@ -45,10 +46,17 @@ MIGRATION_COLUMNS = {
 
 def init_db() -> None:
     """Create the working database from the seed export on first run."""
+    seed_db = Path(os.environ.get("DISHIT_SEED_DATABASE", DEFAULT_SEED_DB))
+    if not seed_db.is_file():
+        raise FileNotFoundError(
+            f"Dish sentiment database not found: {seed_db}. "
+            "Run data/calculate/calculate.py first, then set DISHIT_SEED_DATABASE "
+            "to its *_review_by_dish.sqlite3 output."
+        )
     WORKING_DB.parent.mkdir(parents=True, exist_ok=True)
     is_new = not WORKING_DB.exists()
     if is_new:
-        shutil.copyfile(SEED_DB, WORKING_DB)
+        shutil.copyfile(seed_db, WORKING_DB)
 
     with sqlite3.connect(WORKING_DB) as connection:
         _migrate_restaurants_table(connection)
