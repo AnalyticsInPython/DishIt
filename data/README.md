@@ -30,8 +30,15 @@ Plus a `dish_sentiment_summary` view — the per-dish leaderboard, empty until
 Re-running is safe: restaurants key on `place_id` and reviews on Google's review id,
 so a later run updates in place rather than duplicating.
 
-Flags: `--include-menuless` loads all 110 restaurants instead of only the 46 that have
-menus; `--json` and `--db` override the paths.
+### Why 46 and not 110
+
+The source JSON holds 110 restaurants, but only 46 of them have menus — the other 64
+have reviews and no menu, because the vision models ran out of daily budget partway
+through collection. By default the loader takes only the 46, so every restaurant in the
+database has dishes to analyse.
+
+Pass `--include-menuless` to load all 110 instead; the extra 64 arrive with their
+reviews and no dishes. `--json` and `--db` override the input and output paths.
 
 ### Notes on the data
 
