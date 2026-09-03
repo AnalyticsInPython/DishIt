@@ -15,8 +15,50 @@ python3 data/db/load_db.py
 
 Creates `data/db/dishit.db` (gitignored) from `data/collect/output/restaurants_full.json`.
 
-Re-running is safe: restaurants key on `place_id` and reviews on Google's review id,
-so a later run updates in place rather than duplicating.
+## Rebuilding after someone collects new data
+
+When a teammate pushes new data, refresh your copy with:
+
+```bash
+git pull
+python3 data/db/load_db.py --rebuild
+```
+
+`dishit.db` is gitignored, so it is never pulled — everyone builds their own from the
+committed JSON. The rebuild takes about a second.
+
+### Why `--rebuild` and not a plain re-run
+
+| | plain re-run | `--rebuild` |
+|---|---|---|
+| adds new restaurants, dishes, reviews | yes | yes |
+| updates changed rows | yes | yes |
+| duplicates anything | no | no |
+| **removes rows dropped from the JSON** | **no** | yes |
+| result | JSON merged *onto* your database | database matches the JSON exactly |
+
+The loader only inserts and updates. Restaurants key on Google's `place_id` and reviews on
+its review id, so a plain re-run never duplicates — but it also cannot delete. A restaurant
+that has since been removed from the JSON stays in your database indefinitely, and your
+copy quietly disagrees with everyone else's.
+
+This is not hypothetical: four restaurants with no reviews were dropped from the dataset.
+Anyone who built a database before that and re-runs without `--rebuild` still has them.
+
+So use `--rebuild` whenever you have pulled new data. A plain re-run is only useful when
+you are adding to a database you know is already current — topping up after your own
+collection run, say.
+
+### Check your database matches
+
+```bash
+python3 -c "import json; print(len([r for r in json.load(open('data/collect/output/restaurants_full.json')) if r.get('menu_items')]), 'restaurants with menus in JSON')"
+sqlite3 data/db/dishit.db "SELECT COUNT(*) || ' restaurants in database' FROM restaurants;"
+```
+
+Those two numbers should agree. If the database is larger, it is carrying stale rows —
+run `--rebuild`. (They differ by design if you loaded with `--include-menuless`, which
+also brings in restaurants that have reviews but no menu.)
 
 By default the loader takes only restaurants that have menus, so every row in the
 database has dishes to analyse. The source JSON also holds restaurants with reviews but

@@ -25,12 +25,16 @@ def parse_price(price_raw):
     return float(match.group()) if match else None
 
 
-def load(json_path, db_path, menus_only=True):
+def load(json_path, db_path, menus_only=True, rebuild=False):
     records = json.loads(Path(json_path).read_text())
     if menus_only:
         records = [r for r in records if r.get("menu_items")]
 
     db_path = Path(db_path)
+    if rebuild:
+        # inserts and updates alone can't remove a restaurant that has since been
+        # dropped from the JSON, so a clean rebuild is the only way to match it exactly
+        db_path.unlink(missing_ok=True)
     fresh = not db_path.exists()
     conn = sqlite3.connect(db_path)
     conn.execute("PRAGMA foreign_keys = ON")
@@ -127,9 +131,16 @@ def main():
         action="store_true",
         help="Also load restaurants that have reviews but no menu items",
     )
+    parser.add_argument(
+        "--rebuild",
+        action="store_true",
+        help="Delete the database first, so restaurants dropped from the JSON disappear too",
+    )
     args = parser.parse_args()
 
-    counts, fresh = load(args.json, args.db, menus_only=not args.include_menuless)
+    counts, fresh = load(
+        args.json, args.db, menus_only=not args.include_menuless, rebuild=args.rebuild
+    )
     print(f"{'Created' if fresh else 'Updated'} {args.db}")
     for table, n in counts.items():
         print(f"  {table:<12} {n}")
