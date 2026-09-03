@@ -1,4 +1,4 @@
-"""Convert Google-review JSON exports to the SQLite tables used by DishIt.
+"""Archived Google-review JSON importer.
 
 Example:
     python import_google_reviews.py \

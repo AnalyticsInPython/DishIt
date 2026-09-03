@@ -174,13 +174,16 @@ def analyze_source(
         connection.execute("DELETE FROM mentions WHERE source_id = ?", (source_id,))
         for review in reviews:
             dish_id = get_or_create_dish(connection, restaurant_id, review.dish)
+            confidence = abs(review.score) / review.mentions
             for context in review.contexts:
                 connection.execute(
                     """
-                    INSERT INTO mentions (dish_id, source_id, sentiment, quote)
-                    VALUES (?, ?, ?, ?)
+                    INSERT INTO mentions (
+                        dish_id, source_id, sentiment, confidence, quote
+                    )
+                    VALUES (?, ?, ?, ?, ?)
                     """,
-                    (dish_id, source_id, review.sentiment, context),
+                    (dish_id, source_id, review.sentiment, confidence, context),
                 )
     return reviews
 

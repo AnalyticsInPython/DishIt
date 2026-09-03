@@ -1,4 +1,4 @@
-"""Extract dish-level sentiment from a review with Anthropic's Messages API.
+"""Archived Anthropic-backed dish sentiment calculator.
 
 Install dependencies and set an API key:
     python -m pip install -r requirements.txt
