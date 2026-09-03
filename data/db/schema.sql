@@ -82,16 +82,25 @@ CREATE INDEX IF NOT EXISTS idx_mentions_review     ON dish_mentions(review_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_mentions_unique
     ON dish_mentions(dish_id, review_id, quote);
 
--- the dish leaderboard the product is built around; empty until mentions exist
-CREATE VIEW IF NOT EXISTS dish_sentiment_summary AS
+-- the dish leaderboard the product is built around; every dish appears, with zero
+-- counts until mentions exist. Dropped first because CREATE VIEW IF NOT EXISTS keeps
+-- whatever definition a database already has, so a corrected one would never reach it.
+DROP VIEW IF EXISTS dish_sentiment_summary;
+CREATE VIEW dish_sentiment_summary AS
 SELECT
     d.id                AS dish_id,
     d.name              AS dish_name,
     r.name              AS restaurant_name,
-    COUNT(m.id)                                              AS mention_count,
-    SUM(m.sentiment = 'positive')                            AS positive,
-    SUM(m.sentiment = 'negative')                            AS negative,
-    SUM(m.sentiment = 'mixed')                               AS mixed
+    COUNT(m.id)                                          AS mention_count,
+    COUNT(CASE WHEN m.sentiment = 'positive' THEN 1 END) AS positive,
+    COUNT(CASE WHEN m.sentiment = 'negative' THEN 1 END) AS negative,
+    -- 'neutral' and 'mixed' mean the same thing here, so anything not clearly
+    -- positive or negative is mixed. Taking the remainder rather than counting
+    -- 'mixed' alone keeps the three buckets summing to mention_count whatever else
+    -- the CHECK constraint lets through, NULL included.
+    COUNT(m.id)
+      - COUNT(CASE WHEN m.sentiment = 'positive' THEN 1 END)
+      - COUNT(CASE WHEN m.sentiment = 'negative' THEN 1 END) AS mixed
 FROM dishes d
 JOIN restaurants r  ON r.id = d.restaurant_id
 LEFT JOIN dish_mentions m ON m.dish_id = d.id
