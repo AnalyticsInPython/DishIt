@@ -1,7 +1,8 @@
 # DishIt data pipeline
 
 Two stages: `collect/` gathers restaurants, menus and reviews from the web into JSON;
-`db/` loads that JSON into SQLite.
+`db/` loads that JSON into SQLite. A third, optional calculation step extracts
+dish-level sentiment from review text into that same SQLite database.
 
 The collected JSON is committed, so **you do not need API keys to build the database.**
 
@@ -228,6 +229,30 @@ SELECT * FROM dish_sentiment_summary ORDER BY mention_count DESC LIMIT 20;
 That fourth query is a crude stand-in for what the extraction step will do properly —
 `LIKE` catches the word but can't tell praise from complaint, which is what
 `dish_mentions.sentiment` is for.
+
+## Calculate dish sentiment
+
+After building the database, install the calculation dependencies and its spaCy model:
+
+```bash
+python3 -m pip install -r data/calculate/requirements.txt
+python3 -m spacy download en_core_web_sm
+python3 data/calculate/calculate.py data/db/dishit.db
+```
+
+The calculation reads non-blank `reviews.text` and each review's restaurant menu
+from `dishes.name`, then writes `dish_mentions` **to the same `data/db/dishit.db`
+database**. It never creates dishes: an extracted item is recorded only when it exactly
+matches an existing menu dish for that restaurant, case-insensitively. If duplicate
+menu names exist, the lowest dish ID is used. Re-running the command is idempotent.
+The model's `neutral` result is written as `mixed`, so stored mentions align with the
+current `dish_sentiment_summary` view's positive/negative/mixed aggregation.
+
+For a short test run, limit the number of non-blank reviews:
+
+```bash
+python3 data/calculate/calculate.py data/db/dishit.db --max-reviews 5
+```
 
 ## Schema
 

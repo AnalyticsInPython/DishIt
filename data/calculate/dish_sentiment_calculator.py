@@ -286,7 +286,7 @@ def build_manual_review_outputs(
                 INSERT INTO restaurants (id, name, neighborhood, cuisine, source_urls)
                 VALUES (:id, :name, :neighborhood, :cuisine, :source_urls)
                 """,
-                restaurant_rows,
+                [dict(restaurant) for restaurant in restaurant_rows],
             )
             output_connection.executemany(
                 """
@@ -295,7 +295,7 @@ def build_manual_review_outputs(
                 )
                 VALUES (:id, :restaurant_id, :source_type, :url, :raw_text, :fetched_at)
                 """,
-                source_rows,
+                [dict(source) for source in source_rows],
             )
             for source in source_rows:
                 restaurant_id = int(source["restaurant_id"])
