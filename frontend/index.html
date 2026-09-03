@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DishIt</title>
+<script>
+  // Default to the light palette regardless of OS/browser dark-mode
+  // preference — set before stylesheets paint so there's no flash of dark.
+  document.documentElement.dataset.theme = "light";
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -21,13 +26,17 @@
 
     <form class="search head-search" id="head-search" hidden>
       <input type="search" id="head-q" placeholder="Search dishes, restaurants, cuisines" aria-label="Search">
-      <button type="submit">Search</button>
+      <button type="submit" aria-label="Search">
+        <svg class="search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M17 17l-4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
     </form>
 
     <div class="loc">
       <span class="loc-dot"></span>
       <span id="loc-name">Morningside Heights</span>
-      <button type="button" id="loc-btn">Change</button>
     </div>
   </div>
 </header>

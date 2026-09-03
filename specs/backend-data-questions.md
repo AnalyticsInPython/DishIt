@@ -133,3 +133,31 @@ distributions:
 
 **Ask:** once `dish_mentions` has real rows, pull the actual distribution of mentions
 per dish and sanity-check whether 5 and 0.35 are reasonable, too strict, or too loose.
+
+## 10. Two findings from reviewing PR #9 (backend now on the canonical schema)
+
+Most of the above got answered directly in PR #9 — thank you. Two loose ends from
+that review, for whoever owns these files next:
+
+- **`specs/api-contract.md`'s own `Dish` example still shows `"restaurant_id": "r1"`**,
+  but `backend/app/main.py`'s actual `dish_from_join_row()` returns a nested
+  `"restaurant": {...}` object, not a `restaurant_id`. The doc should be updated to
+  match what the endpoint really returns — the frontend integration on
+  `jonye-frontend-integration` had to adapt to the nested shape by reading the real
+  code rather than the doc.
+- **`GET /api/search` has no field listing every match of the non-primary type** —
+  only `primary` and a `secondary` capped at 4 items. The frontend's manual
+  Dishes/Restaurants toggle (the escape hatch for a misrouted query) now just works
+  within that 4-item cap, which is fine for a demo but worth knowing if the toggle
+  ever needs to show more than 4 recovered results.
+
+## 11. No live endpoint lists "all restaurants nearby"
+
+Discovered while wiring the frontend's "Restaurants nearby" section to the real API:
+there's no endpoint that returns a plain list of nearby restaurants independent of
+dish data (`/api/search` requires a query, `/api/popular` only returns dish lists).
+The frontend currently works around this by deriving an approximate nearby list from
+the restaurants embedded in `/api/popular`'s three dish lists, deduped by id — which
+means only restaurants with at least one dish clearing the mention threshold show up
+there, not literally every nearby restaurant. Worth a `GET /api/restaurants` (or
+similar) if the demo wants a real "every restaurant near you" list.

@@ -152,35 +152,39 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
   white-space: nowrap;
 }
 .loc-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pos); flex: none; }
-.loc button { color: var(--ink); font-family: var(--display); font-weight: 600; font-size: .8125rem; text-decoration: underline; text-underline-offset: 2px; }
-.loc button:hover { color: var(--muted); }
 
 /* --- Search field -------------------------------------------------------- */
 
-.search { display: flex; gap: 8px; }
+/* Merged pill: input and button share one bordered container, button is a
+   small icon-only circle — no visible "Search" text, deliberately minimal. */
+.search {
+  display: flex; align-items: center; gap: 0;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 4px;
+}
 .search input {
   flex: 1;
   font-family: var(--body);
   font-size: 1rem;
-  padding: 12px 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  background: var(--surface);
+  padding: 10px 16px;
+  border: 0;
+  background: transparent;
   color: var(--ink);
   min-width: 0;
 }
 .search input::placeholder { color: var(--muted); }
-.search input:focus { outline: 2px solid var(--brand); outline-offset: -1px; border-color: transparent; }
+.search input:focus { outline: none; }
 .search button {
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: .875rem;
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; padding: 0; flex: none;
   background: var(--brand);
   color: var(--brand-ink);
-  padding: 12px 22px;
-  border-radius: var(--r);
-  white-space: nowrap;
+  border-radius: 50%;
+  transition: background-color .12s, color .12s;
 }
+.search-icon { width: 16px; height: 16px; flex: none; }
 
 /* --- Hero ---------------------------------------------------------------- */
 
@@ -190,7 +194,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
   display: flex; flex-direction: column; align-items: center;
 }
 .hero h1 {
-  font-size: clamp(2.5rem, 6vw, 3.75rem);
+  font-size: clamp(1.5rem, 3.6vw, 2.25rem);
   font-weight: 800;
   letter-spacing: -.035em;
   line-height: 1.02;
@@ -199,7 +203,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 }
 .hero h1 em { font-style: normal; color: var(--brand); }
 .hero p {
-  font-size: 1.1875rem;
+  font-size: .9375rem;
   color: var(--muted);
   max-width: 54ch;
   margin: 0 auto 28px;
@@ -417,6 +421,8 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 .empty h3 { font-family: var(--display); font-size: 1.125rem; font-weight: 700; margin-bottom: 6px; }
 .empty p { color: var(--muted); margin: 0 auto 18px; max-width: 46ch; font-size: .9375rem; }
 .empty .hero-tries { justify-content: center; }
+.tumbleweed { color: var(--muted); margin: 0 auto 10px; }
+.tumbleweed-icon { width: 44px; height: 44px; }
 
 .thin-note {
   display: flex; gap: 9px; align-items: flex-start;
@@ -476,9 +482,14 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 }
 .readout .of { font-family: var(--display); font-size: .8125rem; font-weight: 600; color: var(--muted); }
 
-.split-row { display: flex; justify-content: space-between; font-family: var(--mono); font-size: .75rem; margin-top: 8px; }
-.split-row .a { color: var(--pos); }
-.split-row .b { color: var(--neg); }
+.split-row { display: flex; gap: 10px; font-family: var(--mono); font-size: .75rem; margin-top: 8px; }
+.split-label { white-space: nowrap; overflow: visible; }
+.split-label.edge-l { text-align: left; }
+.split-label.edge-r { text-align: right; }
+.split-label.mid { text-align: center; }
+.split-label.a { color: var(--pos); }
+.split-label.b { color: var(--neg); }
+.split-label.x { color: var(--muted); }
 
 .block-title {
   font-family: var(--display); font-size: .6875rem; font-weight: 700;
@@ -506,8 +517,8 @@ a.quote:hover { background: var(--surface-2); }
   color: var(--muted); text-transform: uppercase; letter-spacing: .05em;
   display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
 }
-.evidence-link { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; text-transform: none; letter-spacing: normal; }
-a.quote:hover .evidence-link { color: var(--muted); }
+.original-review-link { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; text-transform: none; letter-spacing: normal; }
+a.quote:hover .original-review-link { color: var(--muted); }
 
 .alsoat { display: flex; flex-direction: column; gap: 2px; }
 .alsoat-row {
