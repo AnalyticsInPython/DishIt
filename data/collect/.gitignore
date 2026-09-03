@@ -1,5 +1,6 @@
 .env
 .venv/
-output/
 __pycache__/
 *.pyc
+output/*
+!output/*.json
