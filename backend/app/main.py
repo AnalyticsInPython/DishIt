@@ -1,6 +1,5 @@
 """DishIt serving API — implements specs/api-contract.md against the
-sqlite3 database db.py builds from the ingestion pipeline's export plus
-the fictional restaurants from frontend/fixtures.json.
+canonical SQLite database built by the ingestion and calculation pipeline.
 
 Run:
     uv sync
@@ -26,9 +25,8 @@ ROOT = Path(__file__).resolve().parents[2]
 FRONTEND_DIR = ROOT / "frontend"
 INDEX = FRONTEND_DIR / "index.html"
 
-# Matches frontend/fixtures.json's _threshold. Not yet configurable per
-# restaurant/dish — a single constant until real mention volume tells us
-# whether that needs to vary.
+# A single conservative cutoff until real mention volume establishes whether
+# per-restaurant or per-dish thresholds are warranted.
 THRESHOLD = 5
 # A dish needs both real volume and a genuine split to earn the badge —
 # proposed in specs/api-contract.md's open questions, applied here.
@@ -50,31 +48,45 @@ DbConnection = Annotated[sqlite3.Connection, Depends(db.get_db)]
 
 def restaurant_from_row(row: sqlite3.Row, lat: float | None, lng: float | None) -> dict:
     distance_m = None
-    if lat is not None and lng is not None and row["lat"] is not None and row["lng"] is not None:
-        distance_m = haversine_meters(lat, lng, row["lat"], row["lng"])
+    if (
+        lat is not None
+        and lng is not None
+        and row["latitude"] is not None
+        and row["longitude"] is not None
+    ):
+        distance_m = haversine_meters(lat, lng, row["latitude"], row["longitude"])
     return {
         "id": row["id"],
         "name": row["name"],
-        "neighborhood": row["neighborhood"],
-        "cuisine": row["cuisine"],
-        "cross_street": row["cross_street"],
-        "lat": row["lat"],
-        "lng": row["lng"],
+        "neighborhood": None,
+        "cuisine": row["category"],
+        "cross_street": row["address"],
+        "lat": row["latitude"],
+        "lng": row["longitude"],
         "distance_m": distance_m,
         "image": None,
-        "hours_today": row["hours_today"],
+        "hours_today": None,
     }
 
 
 def sentiment_and_flags(connection: sqlite3.Connection, dish_id: int) -> tuple[dict, int, bool]:
     summary = connection.execute(
-        "SELECT * FROM dish_sentiment_summary WHERE dish_id = ?", (dish_id,)
+        """
+        SELECT mention_count, positive, negative, mixed
+        FROM dish_sentiment_summary
+        WHERE dish_id = ?
+        """,
+        (dish_id,),
     ).fetchone()
     if summary is None:
         empty = {"label": "neutral", "score": 0, "positive": 0, "negative": 0, "neutral": 0}
         return empty, 0, False
 
-    positive, negative = summary["positive_mentions"], summary["negative_mentions"]
+    positive, negative, mixed = (
+        summary["positive"] or 0,
+        summary["negative"] or 0,
+        summary["mixed"] or 0,
+    )
     non_neutral = positive + negative
     score = round(100 * positive / non_neutral) if non_neutral else 0
     mention_count = summary["mention_count"]
@@ -82,13 +94,23 @@ def sentiment_and_flags(connection: sqlite3.Connection, dish_id: int) -> tuple[d
     is_controversial = (
         mention_count >= THRESHOLD and minority_share >= CONTROVERSIAL_MIN_MINORITY_SHARE
     )
+    if mention_count == 0:
+        label = "neutral"
+    elif mixed or (positive and negative):
+        label = "mixed"
+    elif positive:
+        label = "positive"
+    else:
+        label = "negative"
 
     sentiment = {
-        "label": summary["overall_sentiment"],
+        "label": label,
         "score": score,
         "positive": positive,
         "negative": negative,
-        "neutral": summary["neutral_mentions"],
+        # calculate.py maps model-neutral output to canonical "mixed"; the
+        # response shape has no mixed count, so neutral is always zero.
+        "neutral": 0,
     }
     return sentiment, mention_count, is_controversial
 
@@ -97,14 +119,13 @@ def source_mix(connection: sqlite3.Connection, dish_id: int) -> dict:
     row = connection.execute(
         """
         SELECT
-            SUM(CASE WHEN s.source_type = 'critic' THEN 1 ELSE 0 END) AS critic,
-            SUM(CASE WHEN s.source_type != 'critic' THEN 1 ELSE 0 END) AS public
-        FROM mentions m JOIN sources s ON s.id = m.source_id
+            COUNT(m.id) AS public
+        FROM dish_mentions m
         WHERE m.dish_id = ?
         """,
         (dish_id,),
     ).fetchone()
-    return {"critic": row["critic"] or 0, "public": row["public"] or 0}
+    return {"critic": 0, "public": row["public"] or 0}
 
 
 def dish_from_join_row(
@@ -115,36 +136,39 @@ def dish_from_join_row(
     restaurant = {
         "id": row["restaurant_id"],
         "name": row["restaurant_name"],
-        "neighborhood": row["neighborhood"],
-        "cuisine": row["cuisine"],
-        "cross_street": row["cross_street"],
-        "lat": row["lat"],
-        "lng": row["lng"],
+        "neighborhood": None,
+        "cuisine": row["category"],
+        "cross_street": row["address"],
+        "lat": row["latitude"],
+        "lng": row["longitude"],
         "distance_m": (
-            haversine_meters(lat, lng, row["lat"], row["lng"])
-            if lat is not None and lng is not None and row["lat"] is not None
+            haversine_meters(lat, lng, row["latitude"], row["longitude"])
+            if lat is not None
+            and lng is not None
+            and row["latitude"] is not None
+            and row["longitude"] is not None
             else None
         ),
         "image": None,
-        "hours_today": row["hours_today"],
+        "hours_today": None,
     }
     return {
         "id": row["dish_id"],
-        "name": row["canonical_name"],
+        "name": row["name"],
         "restaurant": restaurant,
         "sentiment": sentiment,
         "mention_count": mention_count,
         "is_controversial": is_controversial,
         "source_mix": source_mix(connection, row["dish_id"]),
-        "on_current_menu": None,  # menu-matching isn't built yet
+        "on_current_menu": True,
     }
 
 
 DISH_RESTAURANT_JOIN_SQL = """
     SELECT
-        d.id AS dish_id, d.canonical_name,
-        r.id AS restaurant_id, r.name AS restaurant_name, r.neighborhood, r.cuisine,
-        r.cross_street, r.lat, r.lng, r.hours_today
+        d.id AS dish_id, d.name,
+        r.id AS restaurant_id, r.name AS restaurant_name, r.address, r.category,
+        r.latitude, r.longitude
     FROM dishes d JOIN restaurants r ON r.id = d.restaurant_id
 """
 
@@ -169,9 +193,9 @@ def _tie_break_distance(row: sqlite3.Row, lat: float | None, lng: float | None) 
     """Distance used only to break ties within search routing, never shown
     to the user — 0 when either side's coordinates are missing, rather
     than raising, since routing shouldn't fail over a missing lat/lng."""
-    if lat is None or lng is None or row["lat"] is None:
+    if lat is None or lng is None or row["latitude"] is None or row["longitude"] is None:
         return 0.0
-    return haversine_meters(lat, lng, row["lat"], row["lng"])
+    return haversine_meters(lat, lng, row["latitude"], row["longitude"])
 
 
 # --- endpoints --------------------------------------------------------------
@@ -205,7 +229,7 @@ def get_search(
     search_dishes = [
         {
             "id": r["dish_id"],
-            "name": r["canonical_name"],
+            "name": r["name"],
             "mention_count": sentiment_and_flags(connection, r["dish_id"])[1],
         }
         for r in dish_rows
@@ -214,7 +238,7 @@ def get_search(
         {
             "id": r["id"],
             "name": r["name"],
-            "cuisine": r["cuisine"],
+            "cuisine": r["category"],
             "distance_m": _tie_break_distance(r, lat, lng),
         }
         for r in restaurant_rows
@@ -280,9 +304,18 @@ def get_dish(
 
     quote_rows = connection.execute(
         """
-        SELECT m.quote AS text, m.sentiment, s.source_type, s.url AS source_url
-        FROM mentions m JOIN sources s ON s.id = m.source_id
+        SELECT m.quote AS text, m.sentiment, r.url AS source_url
+        FROM dish_mentions m
+        JOIN reviews r ON r.id = m.review_id
         WHERE m.dish_id = ?
+        ORDER BY
+            CASE m.sentiment
+                WHEN 'negative' THEN 1
+                WHEN 'mixed' THEN 2
+                WHEN 'positive' THEN 3
+                ELSE 4
+            END,
+            m.id
         LIMIT 3
         """,
         (dish_id,),
@@ -290,8 +323,8 @@ def get_dish(
     quotes = [
         {
             "text": q["text"],
-            "source_type": q["source_type"],
-            "source_label": q["source_type"].capitalize(),
+            "source_type": "google",
+            "source_label": "Google",
             "source_url": q["source_url"],
             "sentiment": q["sentiment"],
         }
@@ -299,8 +332,8 @@ def get_dish(
     ]
 
     also_at_rows = connection.execute(
-        f"{DISH_RESTAURANT_JOIN_SQL} WHERE d.canonical_name = ? COLLATE NOCASE",
-        (row["canonical_name"],),
+        f"{DISH_RESTAURANT_JOIN_SQL} WHERE d.name = ? COLLATE NOCASE",
+        (row["name"],),
     ).fetchall()
     also_at = [dish_from_join_row(connection, r, lat, lng) for r in also_at_rows]
     also_at.sort(key=lambda d: d["sentiment"]["score"], reverse=True)

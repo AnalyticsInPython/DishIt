@@ -25,9 +25,18 @@ All responses are JSON. All endpoints are namespaced under `/api/`.
 }
 ```
 
-`distance_m` is computed per request from the caller's `lat`/`lng`, not stored — **this requires `restaurants` to store `lat`/`lng`**, which the current schema doesn't have yet. The frontend derives an estimated walking time from it (`distance_m ÷ 80 m/min`, ~3 mph) rather than calling a routing API — no `time_min` field needed from the backend, the frontend computes it.
+`distance_m` is computed per request from the caller's `lat`/`lng`, not stored. The
+frontend derives an estimated walking time from it (`distance_m ÷ 80 m/min`, ~3 mph)
+rather than calling a routing API — no `time_min` field needed from the backend, the
+frontend computes it.
 `image` is nullable — the frontend draws a generated placeholder when it's null, so shipping without photography is fine.
 `hours_today` is nullable — a plain display string (e.g. `"Open until 10pm"`, `"Closed today"`), not a structured schedule. Rendered plainly, not color-coded, since a bare string can't safely be read as open/closed without a real parsed state.
+
+**Canonical SQLite mapping:** `cuisine` is `restaurants.category`; `cross_street`
+carries the unparsed `restaurants.address`; and `lat`/`lng` are `latitude`/`longitude`.
+The canonical dataset has no reliable neighborhood or current-hours fields, so
+`neighborhood` and `hours_today` are returned as `null`. The API does not fabricate
+those values.
 
 ### Dish
 
@@ -50,10 +59,15 @@ All responses are JSON. All endpoints are namespaced under `/api/`.
 }
 ```
 
-- `label` is one of `positive` / `negative` / `mixed`.
+- `label` is one of `positive` / `negative` / `mixed`; it is `neutral` only when a
+  menu dish has no mentions.
 - `score` is the integer percentage of non-neutral mentions that are positive, 0–100.
-- `positive + negative + neutral` should equal `mention_count`. The frontend draws the sentiment bar from these three counts, not from `score`.
-- **`on_current_menu` is nullable, and `null` is meaningful**: it means *we never checked*, which is different from `false` (*we checked and it's gone*). This keeps menu-matching an optional enrichment rather than a blocking dependency — if menu scraping never lands, every dish ships `null` and the UI simply doesn't claim anything.
+- The canonical summary stores positive, negative, and mixed mention counts. Its
+  response shape has no `mixed` count, and the calculation pipeline converts model
+  neutral results to `mixed`, so `neutral` is always `0`. Consequently, these three
+  response counts can be less than `mention_count` when mixed mentions exist.
+- `on_current_menu` is `true` for every returned dish: `dishes` is the current menu
+  table loaded by the canonical pipeline.
 
 ### Quote
 
@@ -68,6 +82,10 @@ All responses are JSON. All endpoints are namespaced under `/api/`.
 ```
 
 `source_type` is one of `critic` / `reddit` / `google`. `source_label` is what the UI prints, so it should be human-readable. **`source_url` is nullable** — every quote in the dish modal is click-through to its evidence when present; when it's null (e.g. a paywalled critic piece with no public link) the UI renders the quote as plain, non-interactive text instead of silently linking to nothing.
+
+The canonical pipeline currently collects Google reviews only. Its quote responses
+use `source_type: "google"` and `source_label: "Google"`; source mix is therefore
+`{ "critic": 0, "public": mention_count }`.
 
 ## Endpoints
 

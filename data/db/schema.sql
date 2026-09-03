@@ -77,6 +77,10 @@ CREATE INDEX IF NOT EXISTS idx_media_review        ON review_media(review_id);
 CREATE INDEX IF NOT EXISTS idx_types_type          ON restaurant_types(type);
 CREATE INDEX IF NOT EXISTS idx_mentions_dish       ON dish_mentions(dish_id);
 CREATE INDEX IF NOT EXISTS idx_mentions_review     ON dish_mentions(review_id);
+-- A review may support a dish with more than one distinct quoted sentence,
+-- but re-running calculation must not duplicate an identical mention.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_mentions_unique
+    ON dish_mentions(dish_id, review_id, quote);
 
 -- the dish leaderboard the product is built around; empty until mentions exist
 CREATE VIEW IF NOT EXISTS dish_sentiment_summary AS
