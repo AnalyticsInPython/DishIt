@@ -205,17 +205,9 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
   margin: 0 auto 28px;
 }
 .hero .search { max-width: 620px; width: 100%; }
-.hero-loc {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  font-family: var(--display);
-  font-size: .8125rem;
-  color: var(--muted);
-  margin: 24px 0 0;
-}
-.pin-icon { width: 13px; height: 13px; flex: none; }
 .hero-tries {
   display: flex; flex-wrap: wrap; gap: 8px;
-  margin-top: 14px; align-items: center;
+  margin-top: 24px; align-items: center;
   justify-content: center;
 }
 .hero-tries span { font-family: var(--display); font-size: .75rem; color: var(--muted); }
@@ -256,19 +248,6 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 .tab[aria-selected="true"] { background: var(--ink); color: var(--bg); }
 
 /* --- Grids --------------------------------------------------------------- */
-
-.loc-cta {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-family: var(--display); font-size: .8125rem; font-weight: 600;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
-  padding: 9px 16px;
-  border-radius: 999px;
-  white-space: nowrap;
-}
-.loc-cta:hover { border-color: var(--brand); color: var(--brand); }
-.loc-cta:disabled { opacity: .6; }
 
 .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); }
 .grid-r { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
@@ -414,13 +393,6 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 
 .results-head { padding: 28px 0 18px; }
 .results-head h2 { font-size: 1.625rem; font-weight: 700; letter-spacing: -.025em; }
-.routed {
-  font-size: .9375rem; color: var(--muted); margin: 6px 0 0;
-}
-.routed code {
-  font-family: var(--mono); font-size: .8125rem;
-  background: var(--surface-2); padding: 1px 6px; border-radius: 4px; color: var(--ink);
-}
 
 .toggle {
   display: inline-flex; gap: 2px; padding: 3px;

@@ -16,21 +16,7 @@ const LOCATIONS = [
 ];
 let locIndex = 0;
 
-// Manual cycling (header pill) is the demo-safe default — no permission
-// prompt, works offline. Real geolocation is an opt-in upgrade a viewer
-// reaches for via the hero link or the "restaurants near me" button, and
-// always falls back to the manual location rather than blocking anything.
-let usingGeo = false;
-let geoCoords = null;
-
 /* --- utilities ----------------------------------------------------------- */
-
-// Inline SVG pin, not an emoji, so it renders identically across platforms
-// and inherits the surrounding text color via currentColor.
-const PIN = `<svg class="pin-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <path d="M8 1.5c-2.49 0-4.5 2-4.5 4.46 0 3.34 4.5 8.54 4.5 8.54s4.5-5.2 4.5-8.54c0-2.46-2.01-4.46-4.5-4.46Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
-  <circle cx="8" cy="6" r="1.6" stroke="currentColor" stroke-width="1.3"/>
-</svg>`;
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
@@ -38,15 +24,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
 const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
 
 function activeLocation() {
-  return usingGeo && geoCoords ? { name: "Your location", ...geoCoords } : LOCATIONS[locIndex];
-}
-
-function haversineMeters(lat1, lng1, lat2, lng2) {
-  const R = 6371000;
-  const toRad = (d) => (d * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(a));
+  return LOCATIONS[locIndex];
 }
 
 // Straight-line distance ÷ an average walking speed (~80 m/min, ~3 mph) — no
@@ -56,24 +34,6 @@ function distanceLabel(distance_m) {
   const mi = (distance_m / 1609).toFixed(1);
   const min = Math.max(1, Math.round(distance_m / WALK_M_PER_MIN));
   return `${mi} mi · ~${min} min walk`;
-}
-
-/** Requests real browser geolocation and recomputes restaurant distances from
- *  it on success. Always calls back — on denial, timeout, or an unsupported
- *  browser it just leaves the manual location in place, since a location
- *  upgrade should never be something the rest of the page waits on. */
-function resolveGeolocation(cb) {
-  if (!navigator.geolocation) { cb(false); return; }
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      geoCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      usingGeo = true;
-      DB.restaurants.forEach((r) => { r.distance_m = haversineMeters(geoCoords.lat, geoCoords.lng, r.lat, r.lng); });
-      cb(true);
-    },
-    () => cb(false),
-    { timeout: 6000 }
-  );
 }
 
 /* --- DATA ACCESS ---------------------------------------------------------
@@ -253,7 +213,7 @@ function viewHome() {
   const current = tabs.find((t) => t[0] === activeTab);
 
   const loc = activeLocation();
-  const nearWord = usingGeo ? "you" : esc(loc.name);
+  const nearWord = esc(loc.name);
 
   $("#view").innerHTML = `
     <section class="hero">
@@ -264,11 +224,6 @@ function viewHome() {
           <input type="search" id="hero-q" placeholder="Try a dish, a restaurant, or a cuisine" aria-label="Search dishes, restaurants, or cuisines">
           <button type="submit">Search</button>
         </form>
-        <p class="hero-loc">
-          ${usingGeo
-            ? `<span>Distances from <strong>your location</strong></span><button class="loc-cta" type="button" id="hero-loc-btn">${PIN} Refresh location</button>`
-            : `<button class="loc-cta" type="button" id="hero-loc-btn">${PIN} Use my location</button>`}
-        </p>
         <div class="hero-tries">
           <span>Try</span>
           <button class="chip" data-q="cacio e pepe">cacio e pepe</button>
@@ -317,7 +272,7 @@ function viewResults(q) {
         </div>
         <div class="empty">
           <h3>Nothing in range matched that</h3>
-          <p>We only cover ${DB.restaurants.length} restaurants near ${usingGeo ? "you" : esc(activeLocation().name)} right now, so plenty of real dishes aren't in here yet.</p>
+          <p>We only cover ${DB.restaurants.length} restaurants near ${esc(activeLocation().name)} right now, so plenty of real dishes aren't in here yet.</p>
           <div class="hero-tries">
             <span>Try</span>
             <button class="chip" data-q="cacio e pepe">cacio e pepe</button>
@@ -329,7 +284,6 @@ function viewResults(q) {
     return;
   }
 
-  const label = { cuisine: "a cuisine", restaurant_name: "a restaurant name", dish_name: "a dish name" }[res.matched_on];
   const showing = window.__forceType || res.result_type;
   const items = showing === "dishes" ? res.all.dishes : res.all.restaurants;
 
@@ -338,7 +292,6 @@ function viewResults(q) {
       <div class="results-head">
         <button class="back" id="back-btn">← Home</button>
         <h2>${esc(q)}</h2>
-        <p class="routed">Matched <code>${res.matched_on}</code> — reading this as ${label}, so ${res.result_type} lead.</p>
         <div class="toggle" role="group" aria-label="Result type">
           <button data-force="dishes" aria-pressed="${showing === "dishes"}">Dishes</button>
           <button data-force="restaurants" aria-pressed="${showing === "restaurants"}">Restaurants</button>
@@ -504,16 +457,8 @@ document.addEventListener("click", (e) => {
   if (t.closest("#back-btn") || t.closest("#home-link")) { e.preventDefault(); go("home"); return; }
 
   if (t.closest("#loc-btn")) {
-    usingGeo = false;
     locIndex = (locIndex + 1) % LOCATIONS.length;
     go("home");
-    return;
-  }
-
-  const heroLoc = t.closest("#hero-loc-btn");
-  if (heroLoc) {
-    heroLoc.textContent = "Locating…";
-    resolveGeolocation(() => go("home"));
     return;
   }
 
