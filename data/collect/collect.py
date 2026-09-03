@@ -166,6 +166,16 @@ def main():
         help="Skip restaurants already present in the output file and append to it",
     )
     parser.add_argument(
+        "--retry-menuless",
+        action="store_true",
+        help="Re-attempt the menu lookup for saved restaurants that have none, reusing their stored reviews",
+    )
+    parser.add_argument(
+        "--drop-reviewless",
+        action="store_true",
+        help="Remove saved restaurants that have no reviews",
+    )
+    parser.add_argument(
         "--grid-spacing",
         type=int,
         default=500,
@@ -221,12 +231,33 @@ def main():
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     results = []
-    if args.resume and out_path.exists():
+    if (args.resume or args.retry_menuless or args.drop_reviewless) and out_path.exists():
         with open(out_path) as f:
             results = json.load(f)
-        done_ids = {r.get("place_id") for r in results}
-        print(f"Resuming: {len(done_ids)} restaurant(s) already collected.")
-        candidates = [c for c in candidates if c.get("placeId") not in done_ids]
+
+    if args.drop_reviewless:
+        dropped = [r["name"] for r in results if not r.get("reviews")]
+        results = [r for r in results if r.get("reviews")]
+        print(f"Dropped {len(dropped)} restaurant(s) with no reviews: {', '.join(dropped) or 'none'}")
+        _write_json(out_path, results)
+
+    # index by place_id so a retried restaurant replaces its record instead of
+    # appending a second copy of itself
+    by_place_id = {r.get("place_id"): r for r in results}
+
+    if args.resume or args.retry_menuless:
+        # with --retry-menuless a saved record only counts as done once it has a menu
+        done_ids = {
+            pid for pid, r in by_place_id.items()
+            if r.get("menu_items") or not args.retry_menuless
+        }
+        print(f"Skipping {len(done_ids)} restaurant(s) already collected.")
+        candidates = [c for c in candidates if normalize_place_id(c.get("placeId")) not in done_ids]
+
+    if args.retry_menuless:
+        # only revisit places already on file; this is a backfill, not a new sweep
+        candidates = [c for c in candidates if normalize_place_id(c.get("placeId")) in by_place_id]
+        print(f"Retrying {len(candidates)} menuless restaurant(s) using their stored reviews.")
 
     if args.limit:
         candidates = candidates[: args.limit]
@@ -243,15 +274,21 @@ def main():
 
         place_id = normalize_place_id(place.get("placeId"))
         cid = place.get("cid")
-        try:
-            reviews = client.get_reviews(place_id=place_id, cid=cid, max_pages=args.max_review_pages)
-        except RuntimeError as e:
-            # a single unscrapable place shouldn't end a multi-hour run
-            print(f"    review fetch failed: {e}")
-            reviews = []
-        print(f"    pulled {len(reviews)} review(s)")
+        existing = by_place_id.get(place_id)
+        if existing and existing.get("reviews"):
+            # already bought these; a backfill shouldn't pay for them twice
+            reviews = existing["reviews"]
+            print(f"    reused {len(reviews)} stored review(s)")
+        else:
+            try:
+                reviews = client.get_reviews(place_id=place_id, cid=cid, max_pages=args.max_review_pages)
+            except RuntimeError as e:
+                # a single unscrapable place shouldn't end a multi-hour run
+                print(f"    review fetch failed: {e}")
+                reviews = []
+            print(f"    pulled {len(reviews)} review(s)")
 
-        website = place.get("website")
+        website = place.get("website") or (existing or {}).get("raw_place", {}).get("website")
         menu_source_url, menu_items = find_menu(client, name, address, website, reviews)
         if menu_items:
             print(f"    menu found: {len(menu_items)} item(s)")
@@ -261,22 +298,26 @@ def main():
             print("    no menu found - keeping reviews only")
             menuless += 1
 
-        results.append(
-            {
-                "name": name,
-                "address": address,
-                "place_id": place_id,
-                "cid": cid,
-                "distance_m": place["_distance_m"],
-                "menu_source_url": menu_source_url,
-                "menu_items": menu_items,
-                # stored raw (unmodified) - Serper's exact field names weren't
-                # confirmable from public docs, so the DB schema gets finalized
-                # against this real output instead of a guess
-                "reviews": reviews,
-                "raw_place": {k: v for k, v in place.items() if k != "_distance_m"},
-            }
-        )
+        record = {
+            "name": name,
+            "address": address,
+            "place_id": place_id,
+            "cid": cid,
+            "distance_m": place["_distance_m"],
+            "menu_source_url": menu_source_url,
+            "menu_items": menu_items,
+            # stored raw (unmodified) - Serper's exact field names weren't
+            # confirmable from public docs, so the DB schema gets finalized
+            # against this real output instead of a guess
+            "reviews": reviews,
+            "raw_place": {k: v for k, v in place.items() if k != "_distance_m"},
+        }
+        if existing:
+            results[results.index(existing)] = record
+            by_place_id[place_id] = record
+        else:
+            results.append(record)
+            by_place_id[place_id] = record
         # checkpoint every restaurant - this run takes hours, so an interrupt or a
         # crash partway through must not throw away what's already collected
         _write_json(out_path, results)
