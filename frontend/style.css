@@ -210,7 +210,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
   font-family: var(--display);
   font-size: .8125rem;
   color: var(--muted);
-  margin: 14px 0 0;
+  margin: 24px 0 0;
 }
 .pin-icon { width: 13px; height: 13px; flex: none; }
 .hero-tries {

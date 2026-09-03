@@ -234,6 +234,10 @@ function grid(dishes, opts) {
   return `<div class="grid">${dishes.map((d) => dishCard(d, opts)).join("")}</div>`;
 }
 
+function sentimentVar(label) {
+  return label === "positive" ? "pos" : label === "negative" ? "neg" : "split";
+}
+
 /* --- views --------------------------------------------------------------- */
 
 let activeTab = "controversial";
@@ -287,6 +291,14 @@ function viewHome() {
         ${pop[activeTab].length
           ? grid(pop[activeTab])
           : `<div class="empty"><h3>Nothing here yet</h3><p>No dishes in this neighborhood have enough mentions to qualify for this list.</p></div>`}
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head"><h2>Restaurants nearby</h2></div>
+        <p class="section-note">${DB.restaurants.length} restaurants near ${nearWord}, sorted by distance.</p>
+        <div class="grid-r">${[...DB.restaurants].sort((a, b) => a.distance_m - b.distance_m).map(restCard).join("")}</div>
       </div>
     </section>`;
 }
@@ -391,7 +403,7 @@ function openDish(id) {
           <div>
             ${thin ? `<div class="readout"><span class="pct" style="color:var(--muted)">—</span><span class="of">not enough mentions to score</span></div>`
                    : `<div class="readout">
-                        <span class="pct" style="color:var(--${d.sentiment.label === "positive" ? "pos" : d.sentiment.label === "negative" ? "neg" : "split"})">${d.sentiment.score}%</span>
+                        <span class="pct" style="color:var(--${sentimentVar(d.sentiment.label)})">${d.sentiment.score}%</span>
                         <span class="of">positive across ${d.mention_count} mentions</span>
                       </div>`}
             ${thin ? "" : bar(d.sentiment)}
@@ -428,9 +440,8 @@ function openDish(id) {
               ${also_at.map((x) => {
                 const xr = DB.byRest[x.restaurant_id];
                 const isThis = x.id === d.id;
-                const col = x.sentiment.label === "positive" ? "pos" : x.sentiment.label === "negative" ? "neg" : "split";
                 return `<button class="alsoat-row ${isThis ? "is-this" : ""}" data-dish="${x.id}">
-                  <span class="alsoat-pct" style="color:var(--${col})">${x.sentiment.score}%</span>
+                  <span class="alsoat-pct" style="color:var(--${sentimentVar(x.sentiment.label)})">${x.sentiment.score}%</span>
                   <span class="alsoat-name">${esc(xr.name)}${isThis ? " — you're here" : ""}<small>${esc(xr.neighborhood)} · ${distanceLabel(xr.distance_m)}</small></span>
                   <span class="alsoat-n">${x.mention_count} mentions</span>
                 </button>`;
