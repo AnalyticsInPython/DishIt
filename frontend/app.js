@@ -1,30 +1,50 @@
 /* ==========================================================================
-   DishIt — frontend wireframe
+   DishIt — frontend
 
-   Renders entirely from fixtures.json, whose shapes match specs/api-contract.md.
-   Porting to the live backend means replacing the four functions in the DATA
-   ACCESS block with fetch() calls to /api/*. Nothing below that block changes.
+   Renders from the live backend (/api/*, see specs/api-contract.md and
+   backend/app/main.py). frontend/fixtures.json is kept in the repo as
+   sample/reference data matching the same shapes, but is no longer loaded
+   at runtime — everything below fetches from the real API.
    ========================================================================== */
 
-let DB = null;
-let THRESHOLD = 5;
+// Nav-history state for the restaurant view's "back" button: which query (if
+// any) it should return to instead of always going Home.
+let currentView = "home";
+let lastQuery = null;
+let restReturnsToResults = false;
 
-const LOCATIONS = [
-  { name: "Morningside Heights", lat: 40.8075, lng: -73.9626 },
-  { name: "Upper West Side",     lat: 40.7870, lng: -73.9754 },
-  { name: "Manhattan Valley",    lat: 40.7990, lng: -73.9640 }
-];
-let locIndex = 0;
+// Scope is Morningside Heights only — no location switching.
+const HOME_LOCATION = { name: "Morningside Heights", lat: 40.8075, lng: -73.9626 };
+
+// No live endpoint reports the mention threshold, so this mirrors
+// backend/app/main.py's THRESHOLD constant — kept in sync deliberately, same
+// as the search-scoring logic used to be before that moved server-side.
+const THRESHOLD = 5;
+
+// Shared icon-only search-button markup (hero form; the head form's copy lives
+// directly in index.html since it's static).
+const SEARCH_BUTTON = `<button type="submit" aria-label="Search">
+  <svg class="search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.6"/>
+    <path d="M17 17l-4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  </svg>
+</button>`;
 
 /* --- utilities ----------------------------------------------------------- */
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+
+// Joins already-escaped fragments with " · ", dropping any that are falsy —
+// several real-data fields (neighborhood, cuisine, cross_street) can be null,
+// and esc(null) would otherwise render the literal string "null".
+function joinMeta(...parts) {
+  return parts.filter(Boolean).join(" · ");
+}
 
 function activeLocation() {
-  return LOCATIONS[locIndex];
+  return HOME_LOCATION;
 }
 
 // Straight-line distance ÷ an average walking speed (~80 m/min, ~3 mph) — no
@@ -37,101 +57,38 @@ function distanceLabel(distance_m) {
 }
 
 /* --- DATA ACCESS ---------------------------------------------------------
-   Everything the UI knows about the data goes through these four functions.
-   Each maps 1:1 onto an endpoint in specs/api-contract.md.
+   Thin fetch wrappers, one per endpoint in specs/api-contract.md. All the
+   actual routing/scoring/aggregation logic lives server-side now.
    ------------------------------------------------------------------------ */
 
-/** GET /api/popular → { talked_about, controversial, top_rated } */
-function getPopular() {
-  const scored = DB.dishes.filter((d) => d.mention_count >= THRESHOLD);
-  return {
-    talked_about:  [...scored].sort((a, b) => b.mention_count - a.mention_count).slice(0, 6),
-    controversial: scored.filter((d) => d.is_controversial)
-                         .sort((a, b) => b.mention_count - a.mention_count).slice(0, 6),
-    top_rated:     [...scored].sort((a, b) => b.sentiment.score - a.sentiment.score).slice(0, 6)
-  };
+async function apiGet(path) {
+  const response = await fetch(path);
+  if (!response.ok) throw new Error(`${path} → ${response.status}`);
+  return response.json();
 }
 
-/** GET /api/search?q= → { query, result_type, matched_on, primary, secondary }
- *
- *  Intent routing, which the backend must reproduce. Three buckets are scored
- *  independently — restaurant name, dish name, cuisine — and the strongest
- *  match decides which entity type leads. Cuisine is checked first because a
- *  bare cuisine term ("Italian") matches no name field at all and would
- *  otherwise fall through to a weak partial match on something unrelated.
- */
-function search(q) {
-  const query = norm(q);
+const locationQuery = () => `lat=${HOME_LOCATION.lat}&lng=${HOME_LOCATION.lng}`;
+
+/** GET /api/popular → { talked_about, controversial, top_rated } */
+async function getPopular() {
+  return apiGet(`/api/popular?${locationQuery()}`);
+}
+
+/** GET /api/search?q= → { query, result_type, matched_on, primary, secondary } */
+async function search(q) {
+  const query = q.trim();
   if (!query) return null;
-
-  const score = (text) => {
-    const t = norm(text);
-    if (!t) return 0;
-    if (t === query) return 100;
-    if (t.startsWith(query)) return 80;
-    if (t.includes(query)) return 60;
-    const qt = query.split(" ");
-    const tt = new Set(t.split(" "));
-    const hit = qt.filter((w) => w.length > 2 && tt.has(w)).length;
-    return hit ? 40 * (hit / qt.length) : 0;
-  };
-
-  const cuisineHit = Math.max(0, ...DB.restaurants.map((r) => score(r.cuisine)));
-  const restHit    = Math.max(0, ...DB.restaurants.map((r) => score(r.name)));
-  const dishHit    = Math.max(0, ...DB.dishes.map((d) => score(d.name)));
-
-  const dishes = DB.dishes
-    .map((d) => ({ d, s: score(d.name) })).filter((x) => x.s > 0)
-    .sort((a, b) => b.s - a.s || b.d.mention_count - a.d.mention_count).map((x) => x.d);
-
-  const rests = DB.restaurants
-    .map((r) => ({ r, s: Math.max(score(r.name), score(r.cuisine)) })).filter((x) => x.s > 0)
-    .sort((a, b) => b.s - a.s || a.r.distance_m - b.r.distance_m).map((x) => x.r);
-
-  let matched_on, result_type;
-  if (cuisineHit >= 80 && cuisineHit >= restHit && cuisineHit >= dishHit) {
-    matched_on = "cuisine";      result_type = "restaurants";
-  } else if (restHit >= dishHit && restHit > 0) {
-    matched_on = "restaurant_name"; result_type = "restaurants";
-  } else {
-    matched_on = "dish_name";    result_type = "dishes";
-  }
-
-  if (!dishes.length && !rests.length) {
-    return { query: q, result_type: "dishes", matched_on: "none", primary: [], secondary: null };
-  }
-  if (result_type === "dishes" && !dishes.length) { result_type = "restaurants"; matched_on = "restaurant_name"; }
-  if (result_type === "restaurants" && !rests.length) { result_type = "dishes"; matched_on = "dish_name"; }
-
-  const primary = result_type === "dishes" ? dishes : rests;
-  const otherItems = result_type === "dishes" ? rests : dishes;
-
-  return {
-    query: q, result_type, matched_on, primary,
-    // Full matches of both types. The routing above is only a guess about which
-    // to lead with, so the UI's manual toggle needs the complete other list too.
-    all: { dishes, restaurants: rests },
-    secondary: otherItems.length
-      ? { type: result_type === "dishes" ? "restaurants" : "dishes", items: otherItems.slice(0, 4) }
-      : null
-  };
+  return apiGet(`/api/search?q=${encodeURIComponent(query)}&${locationQuery()}`);
 }
 
 /** GET /api/restaurants/{id} → { restaurant, dishes } */
-function getRestaurant(id) {
-  const restaurant = DB.restaurants.find((r) => r.id === id);
-  const dishes = DB.dishes.filter((d) => d.restaurant_id === id)
-    .sort((a, b) => b.mention_count - a.mention_count);
-  return { restaurant, dishes };
+async function getRestaurant(id) {
+  return apiGet(`/api/restaurants/${id}?${locationQuery()}`);
 }
 
 /** GET /api/dishes/{id} → { dish, quotes, also_at } */
-function getDish(id) {
-  const dish = DB.dishes.find((d) => d.id === id);
-  const also_at = DB.dishes
-    .filter((d) => norm(d.name) === norm(dish.name))
-    .sort((a, b) => b.sentiment.score - a.sentiment.score);
-  return { dish, quotes: DB.quotes[id] || [], also_at };
+async function getDish(id) {
+  return apiGet(`/api/dishes/${id}?${locationQuery()}`);
 }
 
 /* --- components ---------------------------------------------------------- */
@@ -146,10 +103,73 @@ function bar(s) {
   </div>`;
 }
 
+// Labels sized proportionally to their own segment (flex-basis matches the
+// same percentages bar() uses), so position still tracks the bar. Rather than
+// centering every label (which can bleed past the row's edge for a long label
+// on a thin edge segment), the leftmost label grows rightward from the left
+// edge and the rightmost grows leftward from the right edge — only a middle
+// label (when all three segments are present) is actually centered. That
+// makes edge overflow structurally impossible regardless of label length.
+function splitRow(s) {
+  const total = s.positive + s.negative + s.neutral || 1;
+  const segs = [
+    { cls: "a", pct: (s.positive / total) * 100, label: `${s.positive} positive` },
+    { cls: "x", pct: (s.neutral / total) * 100, label: `${s.neutral} neutral` },
+    { cls: "b", pct: (s.negative / total) * 100, label: `${s.negative} negative` }
+  ];
+  const present = segs.filter((seg) => seg.pct > 0);
+  const spans = present
+    .map((seg, i) => {
+      const edge = present.length === 1 ? "mid"
+        : i === 0 ? "edge-l"
+        : i === present.length - 1 ? "edge-r" : "mid";
+      return `<span class="split-label ${seg.cls} ${edge}" style="flex-basis:${seg.pct}%">${seg.label}</span>`;
+    })
+    .join("");
+  return `<div class="split-row">${spans}</div>`;
+}
+
+// Edge-anchoring (above) only guarantees the outer two labels can't bleed past
+// the row's own left/right edges — it does nothing to stop a thin *middle*
+// segment's centered text from overlapping into a neighbor, which still
+// happens whenever neutral is a sliver. The only real fix is measuring actual
+// rendered widths after layout and nudging apart anything that still
+// overlaps, so call this once right after inserting a `.split-row` into the
+// DOM (see openDish()).
+function fixSplitLabelOverlap(scopeEl) {
+  const row = scopeEl.querySelector(".split-row");
+  if (!row) return;
+  const labels = [...row.querySelectorAll(".split-label")];
+  if (labels.length < 2) return;
+
+  const GAP = 14;
+  const rowLeft = row.getBoundingClientRect().left;
+  const edges = labels.map((el) => {
+    const r = el.getBoundingClientRect();
+    return { el, left: r.left - rowLeft, right: r.right - rowLeft, shift: 0 };
+  });
+
+  for (let i = 1; i < edges.length; i++) {
+    const minLeft = edges[i - 1].right + edges[i - 1].shift + GAP;
+    if (edges[i].left + edges[i].shift < minLeft) {
+      edges[i].shift = minLeft - edges[i].left;
+    }
+  }
+  for (let i = edges.length - 2; i >= 0; i--) {
+    const maxRight = edges[i + 1].left + edges[i + 1].shift - GAP;
+    if (edges[i].right + edges[i].shift > maxRight) {
+      edges[i].shift = maxRight - edges[i].right;
+    }
+  }
+  edges.forEach(({ el, shift }) => {
+    if (Math.abs(shift) > 0.5) el.style.transform = `translateX(${shift}px)`;
+  });
+}
+
 function dishCard(d, opts = {}) {
   const thin = d.mention_count < THRESHOLD;
   const cls = thin ? "s-thin" : "s-" + d.sentiment.label;
-  const r = DB.byRest[d.restaurant_id];
+  const r = d.restaurant;
   return `<button class="dish ${cls}" data-dish="${d.id}">
     <span class="dish-score">
       <span class="pct">${thin ? "—" : d.sentiment.score + "%"}</span>
@@ -162,30 +182,32 @@ function dishCard(d, opts = {}) {
         ${thin ? '<span class="badge badge-thin">Thin data</span>' : ""}
         ${d.on_current_menu === false ? '<span class="badge badge-off">Off menu</span>' : ""}
       </span>
-      ${opts.hideWhere ? "" : `<span class="dish-where">${esc(r.name)} · ${esc(r.cuisine)}</span>`}
-      ${thin ? "" : bar(d.sentiment)}
+      ${opts.hideWhere ? "" : `<span class="dish-where">${joinMeta(esc(r.name), r.cuisine && esc(r.cuisine))}</span>`}
+      ${bar(d.sentiment)}
       <span class="meta">
         <span><b>${d.mention_count}</b> mentions</span>
         <span>${d.source_mix.critic} critic · ${d.source_mix.public} public</span>
       </span>
-      ${thin ? `<span class="thin-note">Only ${d.mention_count} mention${d.mention_count === 1 ? "" : "s"} — below the ${THRESHOLD}-mention minimum, so we don't score it yet.</span>` : ""}
+      ${thin ? `<span class="thin-note">Not enough mentions to score yet.</span>` : ""}
     </span>
   </button>`;
 }
 
+// No "top dish" preview here (unlike the old fixture-mode version) — a bare
+// Restaurant object from /api/search or the derived "nearby" list carries no
+// per-restaurant dish data, and there's no live endpoint that returns one
+// without an extra fetch per card.
 function restCard(r) {
-  const dishes = DB.dishes.filter((d) => d.restaurant_id === r.id && d.mention_count >= THRESHOLD)
-    .sort((a, b) => b.sentiment.score - a.sentiment.score);
-  const top = dishes[0];
+  const meta = joinMeta(
+    r.neighborhood && esc(r.neighborhood),
+    r.distance_m != null ? distanceLabel(r.distance_m) : null
+  );
   return `<button class="rest" data-rest="${r.id}">
-    <span class="plate"><span>${esc(r.cuisine)}</span></span>
+    <span class="plate">${r.cuisine ? `<span>${esc(r.cuisine)}</span>` : ""}</span>
     <span class="rest-body">
       <span class="rest-name">${esc(r.name)}</span>
-      <span class="rest-meta">${esc(r.neighborhood)} · ${distanceLabel(r.distance_m)}</span>
+      ${meta ? `<span class="rest-meta">${meta}</span>` : ""}
       ${r.hours_today ? `<span class="rest-hours">${esc(r.hours_today)}</span>` : ""}
-      <span class="rest-top">
-        ${top ? `Top dish: <b>${esc(top.name)}</b> · ${top.sentiment.score}%` : "No dishes scored yet"}
-      </span>
     </span>
   </button>`;
 }
@@ -194,19 +216,54 @@ function grid(dishes, opts) {
   return `<div class="grid">${dishes.map((d) => dishCard(d, opts)).join("")}</div>`;
 }
 
+// Hand-drawn tangle-of-lines ball, same inline-SVG-icon approach used
+// elsewhere in this file — no external image request.
+const TUMBLEWEED_SVG = `<svg class="tumbleweed-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+    <circle cx="32" cy="32" r="26"/>
+    <path d="M12 20c8-10 20-14 30-8 9 5 12 16 8 25-4 9-15 14-25 11"/>
+    <path d="M18 12c6 6 8 16 4 26-4 9-13 15-22 14"/>
+    <path d="M40 10c2 10-2 20-10 27-7 6-17 8-25 4"/>
+    <path d="M46 22c6 4 9 13 6 21-3 8-11 13-20 12"/>
+    <path d="M10 34c10 2 20-2 26-10 5-7 6-16 2-24"/>
+  </g>
+</svg>`;
+
+function tumbleweedEmpty(bodyHtml) {
+  return `<div class="empty">
+    <div class="tumbleweed">${TUMBLEWEED_SVG}</div>
+    <h3>Nothing but tumbleweeds here…</h3>
+    ${bodyHtml}
+  </div>`;
+}
+
 function sentimentVar(label) {
   return label === "positive" ? "pos" : label === "negative" ? "neg" : "split";
+}
+
+const LOADING_HTML = `<div class="wrap"><p class="section-note">Loading…</p></div>`;
+function backendErrorHtml() {
+  return `<div class="wrap"><div class="empty"><h3>Couldn't reach the backend</h3><p>Confirm the API server is running and reload.</p></div></div>`;
 }
 
 /* --- views --------------------------------------------------------------- */
 
 let activeTab = "controversial";
 
-function viewHome() {
+async function viewHome() {
   $("#head-search").hidden = true;
-  const pop = getPopular();
+  $("#view").innerHTML = LOADING_HTML;
+
+  let pop;
+  try {
+    pop = await getPopular();
+  } catch {
+    $("#view").innerHTML = backendErrorHtml();
+    return;
+  }
+
   const tabs = [
-    ["controversial", "Controversial", "High volume, split opinion. The dishes people argue about."],
+    ["controversial", "Controversial", ""],
     ["talked_about",  "Most talked about", "Ranked by how often a dish comes up across all sources."],
     ["top_rated",     "Top rated", "Highest share of positive mentions, among dishes clearing the minimum."]
   ];
@@ -215,6 +272,17 @@ function viewHome() {
   const loc = activeLocation();
   const nearWord = esc(loc.name);
 
+  // No live endpoint lists "all restaurants nearby" independent of dish data,
+  // so this derives an approximate nearby list from the restaurants embedded
+  // in the three popular-dish lists (deduped by id) rather than a real
+  // restaurant-listing endpoint.
+  const seen = new Map();
+  for (const list of [pop.talked_about, pop.controversial, pop.top_rated]) {
+    for (const d of list) seen.set(d.restaurant.id, d.restaurant);
+  }
+  const nearbyRestaurants = [...seen.values()]
+    .sort((a, b) => (a.distance_m ?? Infinity) - (b.distance_m ?? Infinity));
+
   $("#view").innerHTML = `
     <section class="hero">
       <div class="wrap">
@@ -222,7 +290,7 @@ function viewHome() {
         <p>DishIt tells you what people are saying and what dishes are worth ordering.</p>
         <form class="search" id="hero-search">
           <input type="search" id="hero-q" placeholder="Try a dish, a restaurant, or a cuisine" aria-label="Search dishes, restaurants, or cuisines">
-          <button type="submit">Search</button>
+          ${SEARCH_BUTTON}
         </form>
         <div class="hero-tries">
           <span>Try</span>
@@ -242,7 +310,7 @@ function viewHome() {
             ${tabs.map((t) => `<button class="tab" role="tab" data-tab="${t[0]}" aria-selected="${t[0] === activeTab}">${t[1]}</button>`).join("")}
           </div>
         </div>
-        <p class="section-note">${current[2]}</p>
+        ${current[2] ? `<p class="section-note">${current[2]}</p>` : ""}
         ${pop[activeTab].length
           ? grid(pop[activeTab])
           : `<div class="empty"><h3>Nothing here yet</h3><p>No dishes in this neighborhood have enough mentions to qualify for this list.</p></div>`}
@@ -252,16 +320,27 @@ function viewHome() {
     <section class="section">
       <div class="wrap">
         <div class="section-head"><h2>Restaurants nearby</h2></div>
-        <p class="section-note">${DB.restaurants.length} restaurants near ${nearWord}, sorted by distance.</p>
-        <div class="grid-r">${[...DB.restaurants].sort((a, b) => a.distance_m - b.distance_m).map(restCard).join("")}</div>
+        ${nearbyRestaurants.length
+          ? `<p class="section-note">${nearbyRestaurants.length} restaurants near ${nearWord}, sorted by distance.</p>
+             <div class="grid-r">${nearbyRestaurants.map(restCard).join("")}</div>`
+          : `<div class="empty"><h3>Nothing here yet</h3><p>No restaurants near ${nearWord} have a dish with enough mentions yet.</p></div>`}
       </div>
     </section>`;
 }
 
-function viewResults(q) {
+async function viewResults(q) {
   $("#head-search").hidden = false;
   $("#head-q").value = q;
-  const res = search(q);
+  lastQuery = q;
+  $("#view").innerHTML = LOADING_HTML;
+
+  let res;
+  try {
+    res = await search(q);
+  } catch {
+    $("#view").innerHTML = backendErrorHtml();
+    return;
+  }
 
   if (!res || !res.primary.length) {
     $("#view").innerHTML = `
@@ -270,22 +349,23 @@ function viewResults(q) {
           <button class="back" id="back-btn">← Home</button>
           <h2>No matches for “${esc(q)}”</h2>
         </div>
-        <div class="empty">
-          <h3>Nothing in range matched that</h3>
-          <p>We only cover ${DB.restaurants.length} restaurants near ${esc(activeLocation().name)} right now, so plenty of real dishes aren't in here yet.</p>
+        ${tumbleweedEmpty(`
+          <p>We only cover restaurants near ${esc(activeLocation().name)} right now, so plenty of real dishes aren't in here yet.</p>
           <div class="hero-tries">
             <span>Try</span>
             <button class="chip" data-q="cacio e pepe">cacio e pepe</button>
             <button class="chip" data-q="tacos">tacos</button>
             <button class="chip" data-q="Italian">Italian</button>
           </div>
-        </div>
+        `)}
       </div>`;
     return;
   }
 
   const showing = window.__forceType || res.result_type;
-  const items = showing === "dishes" ? res.all.dishes : res.all.restaurants;
+  // The backend has no "every match of the other type" field, only a
+  // 4-item-capped secondary list — the manual toggle works within that.
+  const items = showing === res.result_type ? res.primary : (res.secondary?.items ?? []);
 
   $("#view").innerHTML = `
     <div class="wrap">
@@ -302,7 +382,7 @@ function viewResults(q) {
         ? (showing === "dishes"
             ? grid(items)
             : `<div class="grid-r">${items.map(restCard).join("")}</div>`)
-        : `<div class="empty"><h3>No ${showing} matched</h3><p>Switch back above to see what did.</p></div>`}
+        : tumbleweedEmpty("")}
 
       ${res.secondary && showing === res.result_type ? `
         <div class="secondary">
@@ -315,29 +395,57 @@ function viewResults(q) {
     </div>`;
 }
 
-function viewRestaurant(id) {
+async function viewRestaurant(id) {
   $("#head-search").hidden = false;
-  const { restaurant: r, dishes } = getRestaurant(id);
+  $("#view").innerHTML = LOADING_HTML;
+
+  let restaurant, dishes;
+  try {
+    ({ restaurant, dishes } = await getRestaurant(id));
+  } catch {
+    $("#view").innerHTML = backendErrorHtml();
+    return;
+  }
+
   const scored = dishes.filter((d) => d.mention_count >= THRESHOLD);
+  const r = restaurant;
+  const sub = joinMeta(
+    r.cuisine && esc(r.cuisine),
+    r.neighborhood && esc(r.neighborhood),
+    r.cross_street && esc(r.cross_street),
+    r.distance_m != null ? distanceLabel(r.distance_m) : null,
+    r.hours_today && esc(r.hours_today)
+  );
 
   $("#view").innerHTML = `
     <div class="wrap">
       <div class="detail-head">
-        <button class="back" id="back-btn">← Back</button>
+        <button class="back" id="rest-back-btn">← Back</button>
         <h2>${esc(r.name)}</h2>
-        <p class="detail-sub">${esc(r.cuisine)} · ${esc(r.neighborhood)} · ${esc(r.cross_street)} · ${distanceLabel(r.distance_m)}${r.hours_today ? ` · ${esc(r.hours_today)}` : ""}</p>
+        <p class="detail-sub">${sub}</p>
       </div>
       ${scored.length
-        ? `<p class="section-note">${scored.length} dishes have enough mentions to score, ranked by how often they come up.</p>${grid(dishes, { hideWhere: true })}`
+        ? `<p class="section-note">Most popular</p>${grid(dishes, { hideWhere: true })}`
         : `<div class="empty"><h3>Not enough written about this one yet</h3><p>We found mentions of ${dishes.length} dish${dishes.length === 1 ? "" : "es"} here, but none clear the ${THRESHOLD}-mention minimum, so there's nothing we'd stand behind ranking.</p></div>`}
     </div>`;
 }
 
 /* --- dish modal ---------------------------------------------------------- */
 
-function openDish(id) {
-  const { dish: d, quotes, also_at } = getDish(id);
-  const r = DB.byRest[d.restaurant_id];
+const MODAL_LOADING_HTML = `<div class="scrim" id="scrim"><div class="modal"><div class="modal-body"><p class="section-note">Loading…</p></div></div></div>`;
+
+async function openDish(id) {
+  $("#modal-root").innerHTML = MODAL_LOADING_HTML;
+
+  let d, quotes, also_at;
+  try {
+    ({ dish: d, quotes, also_at } = await getDish(id));
+  } catch {
+    $("#modal-root").innerHTML = "";
+    return;
+  }
+
+  const r = d.restaurant;
   const thin = d.mention_count < THRESHOLD;
   const elsewhere = also_at.filter((x) => x.id !== d.id);
 
@@ -347,29 +455,24 @@ function openDish(id) {
         <div class="modal-head">
           <div>
             <h3>${esc(d.name)}</h3>
-            <p class="modal-where">${esc(r.name)} · ${esc(r.cuisine)} · ${esc(r.neighborhood)}</p>
+            <p class="modal-where">${joinMeta(esc(r.name), r.cuisine && esc(r.cuisine), r.neighborhood && esc(r.neighborhood))}</p>
           </div>
           <button class="modal-x" id="modal-x" aria-label="Close">✕</button>
         </div>
         <div class="modal-body">
 
           <div>
-            ${thin ? `<div class="readout"><span class="pct" style="color:var(--muted)">—</span><span class="of">not enough mentions to score</span></div>`
+            ${thin ? `<div class="readout"><span class="pct" style="color:var(--muted)">—</span><span class="of">not enough mentions to score yet</span></div>`
                    : `<div class="readout">
                         <span class="pct" style="color:var(--${sentimentVar(d.sentiment.label)})">${d.sentiment.score}%</span>
                         <span class="of">positive across ${d.mention_count} mentions</span>
                       </div>`}
-            ${thin ? "" : bar(d.sentiment)}
-            <div class="split-row">
-              <span class="a">${d.sentiment.positive} positive</span>
-              <span>${d.sentiment.neutral} neutral</span>
-              <span class="b">${d.sentiment.negative} negative</span>
-            </div>
+            ${bar(d.sentiment)}
+            ${splitRow(d.sentiment)}
             <span class="meta">
               <span>${d.source_mix.critic} critic · ${d.source_mix.public} public</span>
               <span>${d.on_current_menu === null ? "menu not checked" : d.on_current_menu ? "on current menu" : "not on current menu"}</span>
             </span>
-            ${d.is_controversial ? `<div class="thin-note">Flagged controversial: high mention volume with genuinely split sentiment, not a weak consensus.</div>` : ""}
           </div>
 
           ${quotes.length ? `
@@ -381,7 +484,7 @@ function openDish(id) {
               return `
               <${tag} class="quote q-${q.sentiment}" ${href}>
                 <blockquote><p>${esc(q.text)}</p></blockquote>
-                <cite>${esc(q.source_label)} ${q.source_url ? '<span class="evidence-link">View evidence →</span>' : ""}</cite>
+                <cite>${esc(q.source_label)} ${q.source_url ? '<span class="original-review-link">Original review →</span>' : ""}</cite>
               </${tag}>`;
             }).join("")}
           </div>` : ""}
@@ -391,11 +494,11 @@ function openDish(id) {
             <div class="block-title">This dish elsewhere</div>
             <div class="alsoat">
               ${also_at.map((x) => {
-                const xr = DB.byRest[x.restaurant_id];
+                const xr = x.restaurant;
                 const isThis = x.id === d.id;
                 return `<button class="alsoat-row ${isThis ? "is-this" : ""}" data-dish="${x.id}">
                   <span class="alsoat-pct" style="color:var(--${sentimentVar(x.sentiment.label)})">${x.sentiment.score}%</span>
-                  <span class="alsoat-name">${esc(xr.name)}${isThis ? " — you're here" : ""}<small>${esc(xr.neighborhood)} · ${distanceLabel(xr.distance_m)}</small></span>
+                  <span class="alsoat-name">${esc(xr.name)}${isThis ? " — you're here" : ""}<small>${joinMeta(xr.neighborhood && esc(xr.neighborhood), xr.distance_m != null ? distanceLabel(xr.distance_m) : null)}</small></span>
                   <span class="alsoat-n">${x.mention_count} mentions</span>
                 </button>`;
               }).join("")}
@@ -406,6 +509,7 @@ function openDish(id) {
       </div>
     </div>`;
 
+  fixSplitLabelOverlap($("#modal-root"));
   $("#modal-x").focus();
 }
 
@@ -415,6 +519,7 @@ function closeDish() { $("#modal-root").innerHTML = ""; }
 
 function go(view, arg) {
   window.__forceType = null;
+  currentView = view;
   closeDish();
   $("#loc-name").textContent = activeLocation().name;
   if (view === "results") viewResults(arg);
@@ -441,7 +546,11 @@ document.addEventListener("click", (e) => {
   if (dish) { openDish(dish.dataset.dish); return; }
 
   const rest = t.closest("[data-rest]");
-  if (rest) { go("restaurant", rest.dataset.rest); return; }
+  if (rest) {
+    restReturnsToResults = currentView === "results";
+    go("restaurant", rest.dataset.rest);
+    return;
+  }
 
   const tab = t.closest("[data-tab]");
   if (tab) { activeTab = tab.dataset.tab; viewHome(); return; }
@@ -456,9 +565,9 @@ document.addEventListener("click", (e) => {
   if (t.closest("#modal-x") || t.id === "scrim") { closeDish(); return; }
   if (t.closest("#back-btn") || t.closest("#home-link")) { e.preventDefault(); go("home"); return; }
 
-  if (t.closest("#loc-btn")) {
-    locIndex = (locIndex + 1) % LOCATIONS.length;
-    go("home");
+  if (t.closest("#rest-back-btn")) {
+    if (restReturnsToResults && lastQuery) go("results", lastQuery);
+    else go("home");
     return;
   }
 
@@ -475,18 +584,4 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDish(
 
 /* --- boot ---------------------------------------------------------------- */
 
-function boot(data) {
-  DB = data;
-  THRESHOLD = data._threshold || 5;
-  DB.byRest = Object.fromEntries(DB.restaurants.map((r) => [r.id, r]));
-  go("home");
-}
-
-if (window.__FIXTURES__) {
-  boot(window.__FIXTURES__);
-} else {
-  fetch("fixtures.json").then((r) => r.json()).then(boot).catch(() => {
-    $("#view").innerHTML = `<div class="wrap"><div class="empty"><h3>Could not load fixtures.json</h3>
-      <p>Serve this directory over HTTP rather than opening the file directly — <code>python3 -m http.server</code> from <code>frontend/</code> is enough.</p></div></div>`;
-  });
-}
+go("home");
