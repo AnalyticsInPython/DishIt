@@ -15,6 +15,24 @@ python3 data/db/load_db.py
 
 Creates `data/db/dishit.db` (gitignored) from `data/collect/output/restaurants_full.json`.
 
+As collected (3 September 2026):
+
+| | JSON | database (default load) |
+|---|---|---|
+| restaurants | 106 | **82** |
+| with menu items | 82 | 82 |
+| without menu items | 24 | 0 |
+| menu items | 3,129 | 3,129 |
+| reviews | 2,944 | 2,524 |
+| review photos | 4,736 | 4,438 |
+
+The database is smaller because the loader takes only restaurants that have menus, so
+every row has dishes to analyse. The 24 without a menu — and their 420 reviews — are left
+out unless you pass `--include-menuless`.
+
+Those counts move whenever anyone collects more, so check the live ones rather than
+trusting this table:
+
 ## Rebuilding after someone collects new data
 
 When a teammate pushes new data, refresh your copy with:
@@ -73,6 +91,62 @@ sqlite3 data/db/dishit.db "SELECT 'restaurants', COUNT(*) FROM restaurants
   UNION ALL SELECT 'dishes', COUNT(*) FROM dishes
   UNION ALL SELECT 'reviews', COUNT(*) FROM reviews;"
 ```
+
+## What's in `restaurants_full.json`
+
+The collector's output and the only input the database needs — about 5.5 MB, committed so
+nobody has to spend API credits regenerating it. A JSON array, one object per restaurant:
+
+```json
+{
+  "name": "Symposium",
+  "address": "544 W 113th St, New York, NY 10025",
+  "place_id": "ChIJAfmpFDz2wokRGWWAhkafMwA",
+  "cid": "14530349065331993",
+  "distance_m": 268,
+  "menu_source_url": "http://www.symposiumnyc.com/",
+  "menu_items": [
+    {"name": "NY Greek Salad", "price": "$18.00", "description": "Feta, lettuce, tomato..."}
+  ],
+  "reviews": [
+    {
+      "id": "Ci9DQUlRQUNvZENo...",
+      "rating": 4,
+      "snippet": "The grape leaves were delicious and the baklava was divine...",
+      "isoDate": "2026-04-07T23:00:39.784Z",
+      "date": "4 months ago",
+      "likes": 0,
+      "link": "https://www.google.com/maps/reviews/...",
+      "user": {"name": "Heidi W.", "link": "...", "thumbnail": "...", "reviews": 112, "photos": 103},
+      "media": [{"type": "image", "imageUrl": "https://...", "caption": "Gyro meat plate"}],
+      "response": {"date": "4 months ago", "snippet": "Thank you for your review!"}
+    }
+  ],
+  "raw_place": { }
+}
+```
+
+| Field | What it is |
+|---|---|
+| `name`, `address` | as Google lists them |
+| `place_id`, `cid` | Google's identifiers; `place_id` is the key everything matches on |
+| `distance_m` | straight-line metres from 116th & Broadway |
+| `menu_source_url` | where this menu was found — a website, a web page, or a photo URL |
+| `menu_items` | list of `{name, price, description}`; **`null` for the 24 restaurants without a menu** |
+| `reviews` | list of review objects, in Google's own order — roughly recent first, but not sorted; sort on `isoDate` if order matters |
+| `raw_place` | the search result exactly as returned, unmodified |
+
+`raw_place` is where the extra restaurant detail lives — `latitude`, `longitude`,
+`website`, `phoneNumber`, `rating`, `ratingCount`, `type`, `types`, `openingHours`,
+`priceLevel`, `description`, `thumbnailUrl`. It is kept verbatim because the loader pulls
+several columns out of it, and because the collector's own field names were guesses at an
+undocumented API; keeping the raw response means nothing is lost if a guess was wrong.
+
+Two things to expect when reading it directly:
+
+- **`menu_items` is `null`, not `[]`**, for restaurants without a menu. Check truthiness
+  rather than length.
+- **`reviews[].snippet` can be absent** when someone left a rating and no words.
 
 ## Querying the database
 
