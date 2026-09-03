@@ -1,4 +1,4 @@
-"""Offline tests for the Anthropic-backed dish sentiment calculator.
+"""Archived tests for the Anthropic-backed dish sentiment calculator.
 
 Run:
     python3 -m unittest -v

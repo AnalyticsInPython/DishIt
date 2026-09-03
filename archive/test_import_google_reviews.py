@@ -1,3 +1,5 @@
+"""Archived tests for the Google-review importer."""
+
 import sqlite3
 import unittest
 

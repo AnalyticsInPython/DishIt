@@ -1,8 +1,4 @@
-"""Basic executable tests for dish_sentiment_calculator.py.
-
-Run after installing requirements and the spaCy English model:
-    python3 -m unittest -v
-"""
+"""Unit and SQLite integration tests for the local model calculator."""
 
 import json
 import sqlite3
@@ -10,19 +6,21 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from dish_sentiment_calculator import (
+import spacy
+
+from data.calculate.dish_sentiment_calculator import (
     analyze_all_sources,
     analyze_review,
     analyze_source,
     build_manual_review_outputs,
-    load_nlp,
 )
 
 
 class DishSentimentTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.nlp = load_nlp()
+        cls.nlp = spacy.blank("en")
+        cls.nlp.add_pipe("sentencizer")
 
     @staticmethod
     def dish_extractor(text: str) -> list[dict[str, object]]:
@@ -159,6 +157,7 @@ class DishSentimentTests(unittest.TestCase):
                 dish_id INTEGER NOT NULL,
                 source_id INTEGER NOT NULL,
                 sentiment TEXT NOT NULL,
+                confidence REAL NOT NULL,
                 quote TEXT NOT NULL,
                 extracted_at TEXT
             );
@@ -167,8 +166,8 @@ class DishSentimentTests(unittest.TestCase):
             VALUES (1, 1, 'The crispy duck was excellent.');
             INSERT INTO dishes (id, restaurant_id, canonical_name)
             VALUES (1, 1, 'crispy duck');
-            INSERT INTO mentions (dish_id, source_id, sentiment, quote)
-            VALUES (1, 1, 'neutral', 'outdated result');
+            INSERT INTO mentions (dish_id, source_id, sentiment, confidence, quote)
+            VALUES (1, 1, 'neutral', 0.5, 'outdated result');
             """
         )
         review = "The crispy duck was excellent."
@@ -220,7 +219,8 @@ class DishSentimentTests(unittest.TestCase):
             );
             CREATE TABLE mentions (
                 id INTEGER PRIMARY KEY, dish_id INTEGER NOT NULL, source_id INTEGER NOT NULL,
-                sentiment TEXT NOT NULL, quote TEXT NOT NULL, extracted_at TEXT
+                sentiment TEXT NOT NULL, confidence REAL NOT NULL,
+                quote TEXT NOT NULL, extracted_at TEXT
             );
             INSERT INTO sources (id, restaurant_id, raw_text)
             VALUES
@@ -266,7 +266,8 @@ class DishSentimentTests(unittest.TestCase):
                     );
                     CREATE TABLE mentions (
                         id INTEGER PRIMARY KEY, dish_id INTEGER NOT NULL, source_id INTEGER NOT NULL,
-                        sentiment TEXT NOT NULL, quote TEXT NOT NULL, extracted_at TEXT
+                        sentiment TEXT NOT NULL, confidence REAL NOT NULL,
+                        quote TEXT NOT NULL, extracted_at TEXT
                     );
                     INSERT INTO restaurants (id, name) VALUES (1, 'Test');
                     INSERT INTO sources (id, restaurant_id, raw_text)
@@ -277,7 +278,13 @@ class DishSentimentTests(unittest.TestCase):
                 )
 
             def generic_extractor(_: str) -> list[dict[str, object]]:
-                return [{"label": "specific dish or menu item", "start": 11, "end": 15}]
+                return [
+                    {
+                        "label": "specific dish or menu item",
+                        "start": 11,
+                        "end": 15,
+                    }
+                ]
 
             written_dish_database, written_dish_json = build_manual_review_outputs(
                 input_database,
@@ -311,9 +318,7 @@ class DishSentimentTests(unittest.TestCase):
                     [("crispy duck",)],
                 )
                 self.assertEqual(
-                    connection.execute(
-                        "SELECT sentiment FROM mentions"
-                    ).fetchall(),
+                    connection.execute("SELECT sentiment FROM mentions").fetchall(),
                     [("positive",)],
                 )
             with sqlite3.connect(dish_database) as connection:
