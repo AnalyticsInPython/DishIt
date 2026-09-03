@@ -15,8 +15,20 @@ python3 data/db/load_db.py
 
 Creates `data/db/dishit.db` (gitignored) from `data/collect/output/restaurants_full.json`.
 
-Re-running is safe: restaurants key on `place_id` and reviews on Google's review id,
-so a later run updates in place rather than duplicating.
+## Updating after someone collects new data
+
+```bash
+git pull
+python3 data/db/load_db.py --rebuild
+```
+
+Re-running without `--rebuild` is safe but only ever inserts and updates: restaurants key
+on `place_id` and reviews on Google's review id, so nothing duplicates. What it cannot do
+is **remove** a restaurant that has since been dropped from the JSON — those rows linger
+and your database quietly disagrees with everyone else's.
+
+`--rebuild` deletes the database and reloads from scratch, so it matches the JSON exactly.
+It takes about a second, so prefer it whenever you have pulled new data.
 
 By default the loader takes only restaurants that have menus, so every row in the
 database has dishes to analyse. The source JSON also holds restaurants with reviews but
