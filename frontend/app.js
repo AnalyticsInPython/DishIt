@@ -74,7 +74,12 @@ async function getPopular() {
   return apiGet(`/api/popular?${locationQuery()}`);
 }
 
-/** GET /api/search?q= → { query, result_type, matched_on, primary, secondary } */
+/** GET /api/restaurants → { restaurants }, nearest first, each with top_dish */
+async function getRestaurants() {
+  return apiGet(`/api/restaurants?${locationQuery()}`);
+}
+
+/** GET /api/search?q= → { query, result_type, matched_on, primary, all, secondary } */
 async function search(q) {
   const query = q.trim();
   if (!query) return null;
@@ -193,10 +198,10 @@ function dishCard(d, opts = {}) {
   </button>`;
 }
 
-// No "top dish" preview here (unlike the old fixture-mode version) — a bare
-// Restaurant object from /api/search or the derived "nearby" list carries no
-// per-restaurant dish data, and there's no live endpoint that returns one
-// without an extra fetch per card.
+// top_dish comes only from /api/restaurants; a Restaurant off /api/search has no
+// dish data attached, so the line is rendered only when it is actually there.
+// It is null for a restaurant whose dishes all sit under the mention threshold,
+// which is most of them on the current corpus.
 function restCard(r) {
   const meta = joinMeta(
     r.neighborhood && esc(r.neighborhood),
@@ -208,6 +213,7 @@ function restCard(r) {
       <span class="rest-name">${esc(r.name)}</span>
       ${meta ? `<span class="rest-meta">${meta}</span>` : ""}
       ${r.hours_today ? `<span class="rest-hours">${esc(r.hours_today)}</span>` : ""}
+      ${r.top_dish ? `<span class="rest-top">${esc(r.top_dish.name)} <b>${r.top_dish.score}%</b></span>` : ""}
     </span>
   </button>`;
 }
@@ -254,9 +260,9 @@ async function viewHome() {
   $("#head-search").hidden = true;
   $("#view").innerHTML = LOADING_HTML;
 
-  let pop;
+  let pop, rests;
   try {
-    pop = await getPopular();
+    [pop, rests] = await Promise.all([getPopular(), getRestaurants()]);
   } catch {
     $("#view").innerHTML = backendErrorHtml();
     return;
@@ -272,16 +278,11 @@ async function viewHome() {
   const loc = activeLocation();
   const nearWord = esc(loc.name);
 
-  // No live endpoint lists "all restaurants nearby" independent of dish data,
-  // so this derives an approximate nearby list from the restaurants embedded
-  // in the three popular-dish lists (deduped by id) rather than a real
-  // restaurant-listing endpoint.
-  const seen = new Map();
-  for (const list of [pop.talked_about, pop.controversial, pop.top_rated]) {
-    for (const d of list) seen.set(d.restaurant.id, d.restaurant);
-  }
-  const nearbyRestaurants = [...seen.values()]
-    .sort((a, b) => (a.distance_m ?? Infinity) - (b.distance_m ?? Infinity));
+  // /api/restaurants returns every restaurant, already sorted nearest-first and
+  // carrying a top dish per card. This used to scavenge restaurants out of the
+  // three popular-dish lists, which could only ever show the handful that
+  // happened to own a top-six dish.
+  const nearbyRestaurants = rests.restaurants;
 
   $("#view").innerHTML = `
     <section class="hero">
@@ -363,9 +364,10 @@ async function viewResults(q) {
   }
 
   const showing = window.__forceType || res.result_type;
-  // The backend has no "every match of the other type" field, only a
-  // 4-item-capped secondary list — the manual toggle works within that.
-  const items = showing === res.result_type ? res.primary : (res.secondary?.items ?? []);
+  // res.all carries both complete match lists, so the toggle shows every match of
+  // whichever type is selected. It used to fall back to the 4-item-capped
+  // secondary list, which silently truncated the non-leading type.
+  const items = (showing === "dishes" ? res.all?.dishes : res.all?.restaurants) ?? [];
 
   $("#view").innerHTML = `
     <div class="wrap">
