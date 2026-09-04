@@ -293,11 +293,15 @@ async function viewHome() {
           <input type="search" id="hero-q" placeholder="Try a dish, a restaurant, or a cuisine" aria-label="Search dishes, restaurants, or cuisines">
           ${SEARCH_BUTTON}
         </form>
+        <!-- One chip per routing bucket, each verified against the live corpus:
+             a dish name, a restaurant name, a cuisine, and a cuisine that also
+             reads as a dish. "Sable & Rye" used to sit here from the fixture era
+             and matched only "Pullman loaf - Rye (faux rye)" on the word Rye. -->
         <div class="hero-tries">
           <span>Try</span>
           <button class="chip" data-q="cacio e pepe">cacio e pepe</button>
-          <button class="chip" data-q="Sable &amp; Rye">Sable &amp; Rye</button>
-          <button class="chip" data-q="Korean">Korean</button>
+          <button class="chip" data-q="Massawa">Massawa</button>
+          <button class="chip" data-q="Pizza">Pizza</button>
           <button class="chip" data-q="ramen">ramen</button>
         </div>
       </div>
