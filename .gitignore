@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .ruff_cache/
+
+# Real credentials. backend/.env.example is the tracked template.
+.env

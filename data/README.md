@@ -300,6 +300,69 @@ For a short test run, limit the number of non-blank reviews:
 data/calculate/.venv/bin/python data/calculate/calculate.py data/db/dishit.db --max-reviews 5
 ```
 
+## Publish to Turso
+
+`dishit.db` is gitignored and built per-laptop, so the deployed backend cannot read
+anyone's local copy. Turso hosts the shared one. Publishing is the last step of the
+pipeline, after loading **and** calculating:
+
+```bash
+python3 data/db/load_db.py --rebuild
+data/calculate/.venv/bin/python data/calculate/calculate.py data/db/dishit.db
+./data/db/push_to_turso.sh
+```
+
+The script converts nothing and asks for nothing: it dumps the local database, replaces
+the remote contents in one shot, then compares row counts table by table and fails if any
+differ. Push whenever you have reloaded or recalculated — a stale Turso copy is invisible
+from the frontend.
+
+First time only, install the CLI. Homebrew cannot do it — `tursodatabase/tap/turso`
+declares `depends_on "libsql/sqld/sqld"`, the self-hosted libSQL *server*, which nothing
+here runs. Take the release binary the formula itself points at, verified against the
+sha256 the formula pins:
+
+```bash
+version=1.0.32
+arch="$(uname -m)"; [ "$arch" = aarch64 ] && arch=arm64
+url="https://github.com/tursodatabase/homebrew-tap/releases/download/v$version"
+url="$url/homebrew-tap_$(uname -s)_$arch.tar.gz"
+
+curl -sSfL "$url" -o /tmp/turso.tar.gz
+shasum -a 256 /tmp/turso.tar.gz    # compare against the sha256 in the formula
+tar xzf /tmp/turso.tar.gz -C /tmp turso
+mkdir -p ~/.local/bin && install -m 755 /tmp/turso ~/.local/bin/turso
+```
+
+The formula, which carries the per-platform sha256 to check that against, is at
+`$(brew --repository)/Library/Taps/tursodatabase/homebrew-tap/turso.rb` after
+`brew tap tursodatabase/tap`, or in the tap's repository on GitHub.
+
+Then create the database and mint credentials:
+
+```bash
+turso auth login
+turso db create dishit
+
+turso db show dishit --url        # -> TURSO_DATABASE_URL
+turso db tokens create dishit     # -> TURSO_AUTH_TOKEN
+```
+
+Choose a **libSQL** database, not the newer Turso Database engine: embedded replicas —
+what the backend uses to serve reads locally instead of over the network — are a libSQL
+feature. The schema itself is portable either way; it uses no FTS5, virtual tables,
+triggers, or custom functions.
+
+`push_to_turso.sh` replaces the remote contents with a dump rather than using
+`turso db import`. Import only ever creates a *new* database, so re-publishing would mean
+destroying this one — which invalidates every token minted for it and breaks whatever is
+already deployed. Dump-and-restore keeps the database, its URL and its tokens stable
+across every push, and avoids the importer's WAL requirement (`load_db.py` writes the file
+in `delete` journal mode).
+
+Once it is hosted, point the backend at it — see `backend/.env.example` for the three
+connection modes.
+
 ## Schema
 
 ### `restaurants`

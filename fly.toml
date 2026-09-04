@@ -1,0 +1,41 @@
+# fly.toml — DishIt
+#
+# One-time setup:
+#     fly launch --no-deploy --copy-config
+#     fly volumes create dishit_data --size 1
+#     fly secrets set TURSO_DATABASE_URL="$(turso db show dishit --url)" \
+#                     TURSO_AUTH_TOKEN="$(turso db tokens create dishit)"
+#     fly deploy
+#
+# The volume holds the embedded replica, which is a cache of Turso, not state:
+# losing it costs one resync at boot, so it never needs backing up.
+
+app = "dishit"
+primary_region = "ewr"          # Newark — the data is Morningside Heights
+
+[build]
+
+[env]
+  DISHIT_DB_MODE = "replica"
+  DISHIT_REPLICA_PATH = "/data/replica.db"
+  DISHIT_SYNC_INTERVAL = "60"
+
+[[mounts]]
+  source = "dishit_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  # An embedded replica resyncs on boot, so scaling to zero costs a cold start.
+  # Raise this to 1 if that latency ever matters more than the idle cost.
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+    method = "GET"
+    path = "/api/popular"
