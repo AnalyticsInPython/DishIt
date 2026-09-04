@@ -6,7 +6,11 @@ from pathlib import Path
 
 import spacy
 
-from data.calculate.calculate import _mention_rows, calculate_reviews
+from data.calculate.calculate import (
+    _mention_rows,
+    calculate_reviews,
+    restaurant_menu_dishes,
+)
 from data.calculate.dish_sentiment_calculator import DishReview
 
 
@@ -123,6 +127,15 @@ class CanonicalCalculationTests(unittest.TestCase):
             ).fetchall(),
             [],
         )
+
+    def test_skips_menu_names_too_short_to_be_a_dish(self) -> None:
+        # A photographed "TEA" was once read as "A", matching the article everywhere.
+        self.connection.execute(
+            "INSERT INTO dishes (id, restaurant_id, name) VALUES (10, 1, 'A')"
+        )
+
+        self.assertNotIn("a", restaurant_menu_dishes(self.connection, 1))
+        self.assertIn("crispy duck", restaurant_menu_dishes(self.connection, 1))
 
     def test_maps_neutral_model_results_to_mixed_for_canonical_storage(self) -> None:
         mentions = _mention_rows(

@@ -6,6 +6,33 @@ dish-level sentiment from review text into that same SQLite database.
 
 The collected JSON is committed, so **you do not need API keys to build the database.**
 
+## One database, and only one
+
+`data/db/dishit.db` is the only database this pipeline builds. Everything reads and
+writes that one file: `load_db.py` creates it, `calculate.py` adds `dish_mentions` to it,
+and the backend serves from it (`backend/app/db.py`, overridable with `DISHIT_DATABASE`).
+
+Three things will quietly give you a *second* database, so avoid them:
+
+- **Running `dish_sentiment_calculator.py` as a command.** It is the model engine that
+  `calculate.py` imports, and its own CLI is a leftover that works on an older schema:
+  `review` writes four side files (including a `_by_dish.sqlite3` whose
+  `dish_sentiment_summary` is a *table* with different columns from the view here), and
+  `analyze` / `analyze-all` create an empty database if the path is wrong. Always go
+  through `calculate.py`.
+- **A mistyped path.** Both `sqlite3 <path>` and `--db <path>` create an empty database
+  rather than erroring when the file doesn't exist.
+- **`archive/`.** Those scripts predate this pipeline and use the old
+  `restaurants / sources / dishes / mentions` schema; their sample databases live in
+  `archive/fixtures/` and are not pipeline output.
+
+### Order matters: load first, then calculate
+
+`load_db.py` replaces each restaurant's dishes wholesale on every run, and
+`dish_mentions.dish_id` cascades on delete — so **re-running `load_db.py` erases every
+dish mention.** Run the loader first and the calculation second, and whenever you reload
+new data, plan to re-run the calculation after it.
+
 ## Build the database
 
 No dependencies, no virtualenv — the loader is Python standard library only:
@@ -232,13 +259,24 @@ That fourth query is a crude stand-in for what the extraction step will do prope
 
 ## Calculate dish sentiment
 
-After building the database, install the calculation dependencies and its spaCy model:
+Unlike the loader, this step needs a virtualenv. torch and spaCy publish no wheels for
+Python 3.14, and `pyproject.toml` asks for 3.12 anyway, so pin the interpreter:
 
 ```bash
-python3 -m pip install -r data/calculate/requirements.txt
-python3 -m spacy download en_core_web_sm
-python3 data/calculate/calculate.py data/db/dishit.db
+uv venv --python 3.12 data/calculate/.venv
+data/calculate/.venv/bin/python -m pip install -r data/calculate/requirements.txt
+data/calculate/.venv/bin/python -m spacy download en_core_web_sm
+data/calculate/.venv/bin/python data/calculate/calculate.py data/db/dishit.db
 ```
+
+The venv is gitignored. Installing pulls down about 1 GB (torch and friends), and the
+first run fetches two more models from HuggingFace — `urchade/gliner_base` to spot dish
+names and `yangheng/deberta-v3-base-absa-v1.1` to score them, roughly 870 MB together,
+cached in `~/.cache/huggingface` for later runs.
+
+A full pass over ~2,500 reviews takes roughly 45 minutes on an Apple-silicon laptop. It
+runs as a single transaction, so let it finish — an interrupted run leaves the database
+untouched and starts over from the beginning.
 
 The calculation reads non-blank `reviews.text` and each review's restaurant menu
 from `dishes.name`, then writes `dish_mentions` **to the same `data/db/dishit.db`
@@ -248,11 +286,82 @@ menu names exist, the lowest dish ID is used. Re-running the command is idempote
 The model's `neutral` result is written as `mixed`, so stored mentions align with the
 current `dish_sentiment_summary` view's positive/negative/mixed aggregation.
 
+Menu names shorter than `MIN_MENU_NAME_LENGTH` (4 characters, `calculate.py`) are skipped.
+Reading a menu off a photo occasionally clips a name to a stray letter or two — Blue
+Bottle's `TEA` came through as `A` — and a one-letter name matches the article in
+practically every review. That single row produced 71 of 496 mentions and topped the
+leaderboard before the guard existed. The cost is small: only 14 dishes in the whole
+menu are that short, and legitimate ones (`Ful`, `314`) contributed 4 mentions between
+them.
+
 For a short test run, limit the number of non-blank reviews:
 
 ```bash
-python3 data/calculate/calculate.py data/db/dishit.db --max-reviews 5
+data/calculate/.venv/bin/python data/calculate/calculate.py data/db/dishit.db --max-reviews 5
 ```
+
+## Publish to Turso
+
+`dishit.db` is gitignored and built per-laptop, so the deployed backend cannot read
+anyone's local copy. Turso hosts the shared one. Publishing is the last step of the
+pipeline, after loading **and** calculating:
+
+```bash
+python3 data/db/load_db.py --rebuild
+data/calculate/.venv/bin/python data/calculate/calculate.py data/db/dishit.db
+./data/db/push_to_turso.sh
+```
+
+The script converts nothing and asks for nothing: it dumps the local database, replaces
+the remote contents in one shot, then compares row counts table by table and fails if any
+differ. Push whenever you have reloaded or recalculated — a stale Turso copy is invisible
+from the frontend.
+
+First time only, install the CLI. Homebrew cannot do it — `tursodatabase/tap/turso`
+declares `depends_on "libsql/sqld/sqld"`, the self-hosted libSQL *server*, which nothing
+here runs. Take the release binary the formula itself points at, verified against the
+sha256 the formula pins:
+
+```bash
+version=1.0.32
+arch="$(uname -m)"; [ "$arch" = aarch64 ] && arch=arm64
+url="https://github.com/tursodatabase/homebrew-tap/releases/download/v$version"
+url="$url/homebrew-tap_$(uname -s)_$arch.tar.gz"
+
+curl -sSfL "$url" -o /tmp/turso.tar.gz
+shasum -a 256 /tmp/turso.tar.gz    # compare against the sha256 in the formula
+tar xzf /tmp/turso.tar.gz -C /tmp turso
+mkdir -p ~/.local/bin && install -m 755 /tmp/turso ~/.local/bin/turso
+```
+
+The formula, which carries the per-platform sha256 to check that against, is at
+`$(brew --repository)/Library/Taps/tursodatabase/homebrew-tap/turso.rb` after
+`brew tap tursodatabase/tap`, or in the tap's repository on GitHub.
+
+Then create the database and mint credentials:
+
+```bash
+turso auth login
+turso db create dishit
+
+turso db show dishit --url        # -> TURSO_DATABASE_URL
+turso db tokens create dishit     # -> TURSO_AUTH_TOKEN
+```
+
+Choose a **libSQL** database, not the newer Turso Database engine: embedded replicas —
+what the backend uses to serve reads locally instead of over the network — are a libSQL
+feature. The schema itself is portable either way; it uses no FTS5, virtual tables,
+triggers, or custom functions.
+
+`push_to_turso.sh` replaces the remote contents with a dump rather than using
+`turso db import`. Import only ever creates a *new* database, so re-publishing would mean
+destroying this one — which invalidates every token minted for it and breaks whatever is
+already deployed. Dump-and-restore keeps the database, its URL and its tokens stable
+across every push, and avoids the importer's WAL requirement (`load_db.py` writes the file
+in `delete` journal mode).
+
+Once it is hosted, point the backend at it — see `backend/.env.example` for the three
+connection modes.
 
 ## Schema
 
@@ -340,7 +449,17 @@ Empty after loading — this is what the dish-extraction and sentiment step writ
 ### `dish_sentiment_summary` (view)
 The per-dish leaderboard from the proposal: `dish_id`, `dish_name`, `restaurant_name`,
 `mention_count`, `positive`, `negative`, `mixed`. Every dish appears with zero counts
-until `dish_mentions` is filled.
+until `dish_mentions` is filled — real zeros, not NULL, so the columns are safe to add up.
+
+`positive + negative + mixed` always equals `mention_count`. `mixed` is the remainder
+rather than a count of `sentiment = 'mixed'`, because `neutral` and `mixed` mean the same
+thing here: anything not clearly positive or negative is mixed. That holds the sum
+together even if a `neutral` row reaches the table, which the CHECK constraint allows
+though `calculate.py` never writes one.
+
+The view is dropped and recreated by `schema.sql`, not created with `IF NOT EXISTS`.
+Otherwise a database built from an older schema would keep its stale definition forever,
+since `IF NOT EXISTS` leaves an existing view alone. Views hold no data, so this is free.
 
 All foreign keys cascade on delete. Indexes cover `dishes(restaurant_id)`, `dishes(name)`,
 `reviews(restaurant_id)`, `reviews(rating)`, `review_media(review_id)`,

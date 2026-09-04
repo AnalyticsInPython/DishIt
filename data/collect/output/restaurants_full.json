@@ -8757,42 +8757,42 @@
     "menu_source_url": "https://media-cdn.tripadvisor.com/media/photo-s/0b/63/76/8e/menu.jpg",
     "menu_items": [
       {
-        "name": "PRESSO",
+        "name": "ESPRESSO",
         "price": "3",
         "description": null
       },
       {
-        "name": "ACCHIATO",
+        "name": "MACCHIATO",
         "price": "3.5",
         "description": null
       },
       {
-        "name": "APPUCINO",
+        "name": "CAPPUCCINO",
         "price": "4",
         "description": null
       },
       {
-        "name": "AFF\u00c8 LATTE",
+        "name": "CAFF\u00c8 LATTE",
         "price": "4.5",
         "description": null
       },
       {
-        "name": "AFF\u00c8 MOCHA",
+        "name": "CAFF\u00c8 MOCHA",
         "price": "5",
         "description": null
       },
       {
-        "name": "A",
+        "name": "TEA",
         "price": "3",
         "description": "Black, Green, Herbal"
       },
       {
-        "name": "OT CHOCOLATE",
+        "name": "HOT CHOCOLATE",
         "price": "4",
         "description": null
       },
       {
-        "name": "MOND MILK",
+        "name": "ALMOND MILK",
         "price": null,
         "description": "ADD TO ANY DRINK: $1"
       },

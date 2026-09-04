@@ -30,6 +30,11 @@ else:
 
 DEFAULT_DATABASE = Path(__file__).resolve().parents[1] / "db" / "dishit.db"
 
+# Menu extraction sometimes clips a name down to a stray letter or two - a photographed
+# "TEA" was read as "A", which then matched the article in every review of that shop.
+# A name too short to be a dish is too short to match on.
+MIN_MENU_NAME_LENGTH = 4
+
 
 def restaurant_menu_dishes(
     connection: sqlite3.Connection, restaurant_id: int
@@ -45,7 +50,10 @@ def restaurant_menu_dishes(
         """,
         (restaurant_id,),
     ):
-        menu.setdefault(str(name).casefold(), (int(dish_id), str(name)))
+        canonical = str(name).casefold()
+        if len(canonical.strip()) < MIN_MENU_NAME_LENGTH:
+            continue
+        menu.setdefault(canonical, (int(dish_id), str(name)))
     return menu
 
 

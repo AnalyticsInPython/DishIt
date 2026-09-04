@@ -2,8 +2,8 @@
 
 Example:
     python import_google_reviews.py \
-        "Data Files for Testing/Baylander_Reviews.json" \
-        "Data Files for Testing/Baylander_Reviews.sqlite3" \
+        archive/fixtures/Baylander_Reviews.json \
+        archive/fixtures/Baylander_Reviews.sqlite3 \
         --restaurant-name Baylander
 """
 

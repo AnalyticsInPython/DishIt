@@ -464,6 +464,7 @@ def build_manual_review_outputs(
     return dish_output_database, dish_output_json
 
 
+@lru_cache(maxsize=1)
 def load_nlp() -> Language:
     """Load English sentence segmentation for extracted entity context."""
     try:
