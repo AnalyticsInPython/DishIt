@@ -1,5 +1,9 @@
 """Smoke tests against a fresh canonical-schema database fixture."""
 
+import pytest
+
+from app.main import sentiment_and_flags
+
 MORNINGSIDE = {"lat": 40.8075, "lng": -73.9626}
 
 
@@ -98,3 +102,33 @@ def test_menu_dish_with_no_mentions_is_neutral(client):
         "negative": 0,
         "neutral": 0,
     }
+
+
+# (positive, negative, mixed, expected score, expected label)
+SENTIMENT_BANDS = [
+    # The regression this guards: `mixed` being non-zero used to decide the label
+    # on its own, so a dish nobody disliked was published as "100% mixed".
+    (7, 0, 2, 100, "positive"),
+    (100, 0, 0, 100, "positive"),
+    (65, 35, 0, 65, "positive"),   # inclusive lower edge of positive
+    (64, 36, 0, 64, "mixed"),
+    (40, 60, 0, 40, "mixed"),      # inclusive lower edge of mixed
+    (39, 61, 0, 39, "negative"),
+    (0, 4, 0, 0, "negative"),
+    # No polarity to divide, so the score is 0 but the dish is not negative.
+    (0, 0, 3, 0, "mixed"),
+    # Nothing said at all.
+    (0, 0, 0, 0, "neutral"),
+]
+
+
+@pytest.mark.parametrize(("positive", "negative", "mixed", "score", "label"), SENTIMENT_BANDS)
+def test_label_is_read_off_the_score(positive, negative, mixed, score, label):
+    sentiment, _, _ = sentiment_and_flags(
+        {
+            "positive": positive,
+            "negative": negative,
+            "mention_count": positive + negative + mixed,
+        }
+    )
+    assert (sentiment["score"], sentiment["label"]) == (score, label)

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   DishIt — frontend wireframe
+   DishIt — frontend
    Palette: Saffron & Charcoal, locked in after comparing all four candidates
    on real screens. Light palette lives on bare :root; dark redefines the same
    tokens under prefers-color-scheme and under the explicit [data-theme] toggle,
@@ -81,19 +81,6 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
   text-transform: uppercase;
   color: var(--muted);
 }
-
-/* --- Sample-data banner -------------------------------------------------- */
-
-.banner {
-  background: var(--surface-2);
-  border-bottom: 1px solid var(--line);
-  font-family: var(--display);
-  font-size: .75rem;
-  padding: 7px 24px;
-  text-align: center;
-  color: var(--muted);
-}
-.banner strong { color: var(--ink); font-weight: 700; }
 
 /* --- Header -------------------------------------------------------------- */
 

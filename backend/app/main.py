@@ -31,6 +31,12 @@ THRESHOLD = 5
 # proposed in specs/api-contract.md's open questions, applied here.
 CONTROVERSIAL_MIN_MINORITY_SHARE = 0.35
 
+# Score bands the label reads from. The card prints the score and the label side
+# by side, so the label has to be a description of the score or the two contradict
+# each other in the same breath.
+POSITIVE_MIN_SCORE = 65
+MIXED_MIN_SCORE = 40
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -80,7 +86,6 @@ def sentiment_and_flags(row: dict) -> tuple[dict, int, bool]:
     """
     positive = row["positive"] or 0
     negative = row["negative"] or 0
-    mixed = row["mixed"] or 0
     mention_count = row["mention_count"] or 0
 
     non_neutral = positive + negative
@@ -89,12 +94,21 @@ def sentiment_and_flags(row: dict) -> tuple[dict, int, bool]:
     is_controversial = (
         mention_count >= THRESHOLD and minority_share >= CONTROVERSIAL_MIN_MINORITY_SHARE
     )
+    # Derived from the score, not from whether a mixed mention exists. The old
+    # rule labelled a dish "mixed" whenever `mixed` was non-zero, and `mixed` is
+    # the remainder (mention_count - positive - negative), so a dish with 7
+    # positive mentions, 0 negative and 2 mixed read "100% mixed" on the card.
     if mention_count == 0:
         label = "neutral"
-    elif mixed or (positive and negative):
+    elif non_neutral == 0:
+        # Every mention was mixed, so there is no polarity to score. The score is
+        # 0 here by the guard above, which the bands would otherwise read as
+        # negative — the opposite of what no-polarity means.
         label = "mixed"
-    elif positive:
+    elif score >= POSITIVE_MIN_SCORE:
         label = "positive"
+    elif score >= MIXED_MIN_SCORE:
+        label = "mixed"
     else:
         label = "negative"
 
@@ -153,8 +167,7 @@ DISH_RESTAURANT_JOIN_SQL = """
         r.latitude, r.longitude,
         COALESCE(s.mention_count, 0) AS mention_count,
         COALESCE(s.positive, 0)      AS positive,
-        COALESCE(s.negative, 0)      AS negative,
-        COALESCE(s.mixed, 0)         AS mixed
+        COALESCE(s.negative, 0)      AS negative
     FROM dishes d
     JOIN restaurants r ON r.id = d.restaurant_id
     LEFT JOIN dish_sentiment_summary s ON s.dish_id = d.id

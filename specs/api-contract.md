@@ -59,9 +59,19 @@ those values.
 }
 ```
 
-- `label` is one of `positive` / `negative` / `mixed`; it is `neutral` only when a
-  menu dish has no mentions.
 - `score` is the integer percentage of non-neutral mentions that are positive, 0–100.
+- `label` is one of `positive` / `negative` / `mixed`, and is **read off `score`**,
+  because the card prints both together and they must not contradict each other:
+
+  | score | label |
+  |---|---|
+  | 65–100 | `positive` |
+  | 40–64 | `mixed` |
+  | 0–39 | `negative` |
+
+  Two cases fall outside the bands. A dish with no mentions is `neutral`. A dish
+  whose every mention was mixed has no positive or negative to divide, so `score`
+  is 0 and it is `mixed` — reading that 0 as `negative` would invert its meaning.
 - The canonical summary stores positive, negative, and mixed mention counts. Its
   response shape has no `mixed` count, and the calculation pipeline converts model
   neutral results to `mixed`, so `neutral` is always `0`. Consequently, these three
