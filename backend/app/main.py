@@ -189,6 +189,19 @@ def _tie_break_distance(row: dict, lat: float | None, lng: float | None) -> floa
 
 # --- endpoints --------------------------------------------------------------
 
+@app.get("/api/health")
+def get_health(database: Db):
+    """Liveness for the platform health check, which runs every 30s forever.
+
+    Deliberately not /api/popular, which builds all 3,129 dishes and sorts them
+    twice on every hit. SELECT 1 is close to free but still proves the connection
+    is alive, which a static {"ok": true} would not: a replica that failed to open
+    should fail the check and take the machine down, so it reboots and resyncs.
+    """
+    database.one("SELECT 1")
+    return {"ok": True}
+
+
 @app.get("/api/popular")
 def get_popular(
     database: Db,

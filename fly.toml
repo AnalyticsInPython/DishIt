@@ -18,7 +18,10 @@ primary_region = "ewr"          # Newark — the data is Morningside Heights
 [env]
   DISHIT_DB_MODE = "replica"
   DISHIT_REPLICA_PATH = "/data/replica.db"
-  DISHIT_SYNC_INTERVAL = "60"
+  # The pipeline publishes at most once a day, so a minute-by-minute poll
+  # would be 1,440 syncs to catch one change. A boot always resyncs, so the
+  # worst case after a push is an hour of staleness on an already-warm machine.
+  DISHIT_SYNC_INTERVAL = "3600"
 
 [[mounts]]
   source = "dishit_data"
@@ -38,4 +41,4 @@ primary_region = "ewr"          # Newark — the data is Morningside Heights
     timeout = "5s"
     grace_period = "20s"
     method = "GET"
-    path = "/api/popular"
+    path = "/api/health"

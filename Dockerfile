@@ -24,7 +24,7 @@ COPY frontend/ ./frontend/
 ENV PATH="/app/.venv/bin:$PATH" \
     DISHIT_DB_MODE=replica \
     DISHIT_REPLICA_PATH=/data/replica.db \
-    DISHIT_SYNC_INTERVAL=60
+    DISHIT_SYNC_INTERVAL=3600
 
 EXPOSE 8080
 CMD ["uvicorn", "app.main:app", "--app-dir", "backend", "--host", "0.0.0.0", "--port", "8080"]
