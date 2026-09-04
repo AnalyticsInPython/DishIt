@@ -115,11 +115,14 @@ All three exclude dishes below the mention threshold. Six per list is enough.
   "result_type": "dishes",
   "matched_on": "dish_name",
   "primary": [Dish],
+  "all": { "dishes": [Dish], "restaurants": [Restaurant] },
   "secondary": { "type": "restaurants", "items": [Restaurant] }
 }
 ```
 
 `result_type` is `dishes` or `restaurants` and tells the frontend which card type leads. `matched_on` is `dish_name` / `restaurant_name` / `cuisine` / `none` and is shown to the user so the routing is legible rather than mysterious. `secondary` is nullable.
+
+`all` carries **both complete match lists**, and is what the manual Dishes/Restaurants toggle renders from — `primary` is only whichever list `result_type` chose, and `secondary.items` is capped at 4, so neither can serve the toggle. It is always present, with empty lists when nothing matched.
 
 **Intent routing.** Three buckets are scored independently — restaurant name, dish name, cuisine — and the strongest match decides which type leads. The reference implementation is in `search()` in `frontend/app.js`; the scoring is:
 

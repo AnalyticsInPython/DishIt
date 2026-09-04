@@ -1,12 +1,16 @@
 /* ==========================================================================
-   DishIt — frontend wireframe
+   DishIt — frontend
 
-   Renders entirely from fixtures.json, whose shapes match specs/api-contract.md.
-   Porting to the live backend means replacing the four functions in the DATA
-   ACCESS block with fetch() calls to /api/*. Nothing below that block changes.
+   Renders from the live API in backend/app/main.py, whose shapes are specified
+   in specs/api-contract.md. Every request goes through the DATA ACCESS block
+   below; nothing else in this file talks to the network.
+
+   frontend/fixtures.json is no longer loaded — it stays as the worked example of
+   the contract's shapes. Rendering it client-side would mean keeping a second
+   copy of the search routing here, and having exactly one implementation of that
+   rule (backend/app/search.py) is the reason this file now calls the API at all.
    ========================================================================== */
 
-let DB = null;
 let THRESHOLD = 5;
 
 const LOCATIONS = [
@@ -15,6 +19,7 @@ const LOCATIONS = [
   { name: "Manhattan Valley",    lat: 40.7990, lng: -73.9640 }
 ];
 let locIndex = 0;
+let knownRestaurantCount = null;
 
 /* --- utilities ----------------------------------------------------------- */
 
@@ -38,100 +43,55 @@ function distanceLabel(distance_m) {
 
 /* --- DATA ACCESS ---------------------------------------------------------
    Everything the UI knows about the data goes through these four functions.
-   Each maps 1:1 onto an endpoint in specs/api-contract.md.
+   Each maps 1:1 onto an endpoint in specs/api-contract.md. They are async;
+   every caller awaits them.
    ------------------------------------------------------------------------ */
 
-/** GET /api/popular → { talked_about, controversial, top_rated } */
-function getPopular() {
-  const scored = DB.dishes.filter((d) => d.mention_count >= THRESHOLD);
-  return {
-    talked_about:  [...scored].sort((a, b) => b.mention_count - a.mention_count).slice(0, 6),
-    controversial: scored.filter((d) => d.is_controversial)
-                         .sort((a, b) => b.mention_count - a.mention_count).slice(0, 6),
-    top_rated:     [...scored].sort((a, b) => b.sentiment.score - a.sentiment.score).slice(0, 6)
-  };
+/** Location is a query param on every endpoint — distance_m is computed per
+ *  request from it, never stored. */
+function locParams(extra = {}) {
+  const { lat, lng } = activeLocation();
+  return new URLSearchParams({ lat, lng, ...extra }).toString();
 }
 
-/** GET /api/search?q= → { query, result_type, matched_on, primary, secondary }
+async function api(path) {
+  const res = await fetch(path, { headers: { Accept: "application/json" } });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => null);
+    throw new Error(detail?.detail || `${res.status} ${res.statusText}`);
+  }
+  return res.json();
+}
+
+/** GET /api/popular → { talked_about, controversial, top_rated } */
+async function getPopular() {
+  return api(`/api/popular?${locParams()}`);
+}
+
+/** GET /api/restaurants → { restaurants }, nearest first, each with top_dish */
+async function getRestaurants() {
+  return api(`/api/restaurants?${locParams()}`);
+}
+
+/** GET /api/search?q= → { query, result_type, matched_on, primary, all, secondary }
  *
- *  Intent routing, which the backend must reproduce. Three buckets are scored
- *  independently — restaurant name, dish name, cuisine — and the strongest
- *  match decides which entity type leads. Cuisine is checked first because a
- *  bare cuisine term ("Italian") matches no name field at all and would
- *  otherwise fall through to a weak partial match on something unrelated.
+ *  Intent routing lives in the backend (backend/app/search.py), which is a
+ *  line-for-line port of the scoring this function used to do here. The rule is
+ *  documented in specs/api-contract.md; change it in both places or neither.
  */
-function search(q) {
-  const query = norm(q);
-  if (!query) return null;
-
-  const score = (text) => {
-    const t = norm(text);
-    if (!t) return 0;
-    if (t === query) return 100;
-    if (t.startsWith(query)) return 80;
-    if (t.includes(query)) return 60;
-    const qt = query.split(" ");
-    const tt = new Set(t.split(" "));
-    const hit = qt.filter((w) => w.length > 2 && tt.has(w)).length;
-    return hit ? 40 * (hit / qt.length) : 0;
-  };
-
-  const cuisineHit = Math.max(0, ...DB.restaurants.map((r) => score(r.cuisine)));
-  const restHit    = Math.max(0, ...DB.restaurants.map((r) => score(r.name)));
-  const dishHit    = Math.max(0, ...DB.dishes.map((d) => score(d.name)));
-
-  const dishes = DB.dishes
-    .map((d) => ({ d, s: score(d.name) })).filter((x) => x.s > 0)
-    .sort((a, b) => b.s - a.s || b.d.mention_count - a.d.mention_count).map((x) => x.d);
-
-  const rests = DB.restaurants
-    .map((r) => ({ r, s: Math.max(score(r.name), score(r.cuisine)) })).filter((x) => x.s > 0)
-    .sort((a, b) => b.s - a.s || a.r.distance_m - b.r.distance_m).map((x) => x.r);
-
-  let matched_on, result_type;
-  if (cuisineHit >= 80 && cuisineHit >= restHit && cuisineHit >= dishHit) {
-    matched_on = "cuisine";      result_type = "restaurants";
-  } else if (restHit >= dishHit && restHit > 0) {
-    matched_on = "restaurant_name"; result_type = "restaurants";
-  } else {
-    matched_on = "dish_name";    result_type = "dishes";
-  }
-
-  if (!dishes.length && !rests.length) {
-    return { query: q, result_type: "dishes", matched_on: "none", primary: [], secondary: null };
-  }
-  if (result_type === "dishes" && !dishes.length) { result_type = "restaurants"; matched_on = "restaurant_name"; }
-  if (result_type === "restaurants" && !rests.length) { result_type = "dishes"; matched_on = "dish_name"; }
-
-  const primary = result_type === "dishes" ? dishes : rests;
-  const otherItems = result_type === "dishes" ? rests : dishes;
-
-  return {
-    query: q, result_type, matched_on, primary,
-    // Full matches of both types. The routing above is only a guess about which
-    // to lead with, so the UI's manual toggle needs the complete other list too.
-    all: { dishes, restaurants: rests },
-    secondary: otherItems.length
-      ? { type: result_type === "dishes" ? "restaurants" : "dishes", items: otherItems.slice(0, 4) }
-      : null
-  };
+async function search(q) {
+  if (!norm(q)) return null;
+  return api(`/api/search?${locParams({ q })}`);
 }
 
 /** GET /api/restaurants/{id} → { restaurant, dishes } */
-function getRestaurant(id) {
-  const restaurant = DB.restaurants.find((r) => r.id === id);
-  const dishes = DB.dishes.filter((d) => d.restaurant_id === id)
-    .sort((a, b) => b.mention_count - a.mention_count);
-  return { restaurant, dishes };
+async function getRestaurant(id) {
+  return api(`/api/restaurants/${encodeURIComponent(id)}?${locParams()}`);
 }
 
 /** GET /api/dishes/{id} → { dish, quotes, also_at } */
-function getDish(id) {
-  const dish = DB.dishes.find((d) => d.id === id);
-  const also_at = DB.dishes
-    .filter((d) => norm(d.name) === norm(dish.name))
-    .sort((a, b) => b.sentiment.score - a.sentiment.score);
-  return { dish, quotes: DB.quotes[id] || [], also_at };
+async function getDish(id) {
+  return api(`/api/dishes/${encodeURIComponent(id)}?${locParams()}`);
 }
 
 /* --- components ---------------------------------------------------------- */
@@ -149,7 +109,8 @@ function bar(s) {
 function dishCard(d, opts = {}) {
   const thin = d.mention_count < THRESHOLD;
   const cls = thin ? "s-thin" : "s-" + d.sentiment.label;
-  const r = DB.byRest[d.restaurant_id];
+  // Every Dish carries its restaurant nested, so there is nothing to look up.
+  const r = d.restaurant;
   return `<button class="dish ${cls}" data-dish="${d.id}">
     <span class="dish-score">
       <span class="pct">${thin ? "—" : d.sentiment.score + "%"}</span>
@@ -174,17 +135,16 @@ function dishCard(d, opts = {}) {
 }
 
 function restCard(r) {
-  const dishes = DB.dishes.filter((d) => d.restaurant_id === r.id && d.mention_count >= THRESHOLD)
-    .sort((a, b) => b.sentiment.score - a.sentiment.score);
-  const top = dishes[0];
+  // The API computes the best-scoring dish per restaurant; fixtures carry none.
+  const top = r.top_dish || null;
   return `<button class="rest" data-rest="${r.id}">
-    <span class="plate"><span>${esc(r.cuisine)}</span></span>
+    <span class="plate"><span>${esc(r.cuisine || "Restaurant")}</span></span>
     <span class="rest-body">
       <span class="rest-name">${esc(r.name)}</span>
-      <span class="rest-meta">${esc(r.neighborhood)} · ${distanceLabel(r.distance_m)}</span>
+      <span class="rest-meta">${r.neighborhood ? esc(r.neighborhood) + " · " : ""}${distanceLabel(r.distance_m)}</span>
       ${r.hours_today ? `<span class="rest-hours">${esc(r.hours_today)}</span>` : ""}
       <span class="rest-top">
-        ${top ? `Top dish: <b>${esc(top.name)}</b> · ${top.sentiment.score}%` : "No dishes scored yet"}
+        ${top ? `Top dish: <b>${esc(top.name)}</b> · ${top.score}%` : "No dishes scored yet"}
       </span>
     </span>
   </button>`;
@@ -202,9 +162,10 @@ function sentimentVar(label) {
 
 let activeTab = "controversial";
 
-function viewHome() {
+async function viewHome() {
   $("#head-search").hidden = true;
-  const pop = getPopular();
+  const [pop, { restaurants }] = await Promise.all([getPopular(), getRestaurants()]);
+  knownRestaurantCount = restaurants.length;
   const tabs = [
     ["controversial", "Controversial", "High volume, split opinion. The dishes people argue about."],
     ["talked_about",  "Most talked about", "Ranked by how often a dish comes up across all sources."],
@@ -252,16 +213,16 @@ function viewHome() {
     <section class="section">
       <div class="wrap">
         <div class="section-head"><h2>Restaurants nearby</h2></div>
-        <p class="section-note">${DB.restaurants.length} restaurants near ${nearWord}, sorted by distance.</p>
-        <div class="grid-r">${[...DB.restaurants].sort((a, b) => a.distance_m - b.distance_m).map(restCard).join("")}</div>
+        <p class="section-note">${restaurants.length} restaurants near ${nearWord}, sorted by distance.</p>
+        <div class="grid-r">${restaurants.map(restCard).join("")}</div>
       </div>
     </section>`;
 }
 
-function viewResults(q) {
+async function viewResults(q) {
   $("#head-search").hidden = false;
   $("#head-q").value = q;
-  const res = search(q);
+  const res = await search(q);
 
   if (!res || !res.primary.length) {
     $("#view").innerHTML = `
@@ -272,7 +233,7 @@ function viewResults(q) {
         </div>
         <div class="empty">
           <h3>Nothing in range matched that</h3>
-          <p>We only cover ${DB.restaurants.length} restaurants near ${esc(activeLocation().name)} right now, so plenty of real dishes aren't in here yet.</p>
+          <p>We only cover ${knownRestaurantCount ?? "a handful of"} restaurants near ${esc(activeLocation().name)} right now, so plenty of real dishes aren't in here yet.</p>
           <div class="hero-tries">
             <span>Try</span>
             <button class="chip" data-q="cacio e pepe">cacio e pepe</button>
@@ -315,9 +276,9 @@ function viewResults(q) {
     </div>`;
 }
 
-function viewRestaurant(id) {
+async function viewRestaurant(id) {
   $("#head-search").hidden = false;
-  const { restaurant: r, dishes } = getRestaurant(id);
+  const { restaurant: r, dishes } = await getRestaurant(id);
   const scored = dishes.filter((d) => d.mention_count >= THRESHOLD);
 
   $("#view").innerHTML = `
@@ -325,7 +286,7 @@ function viewRestaurant(id) {
       <div class="detail-head">
         <button class="back" id="back-btn">← Back</button>
         <h2>${esc(r.name)}</h2>
-        <p class="detail-sub">${esc(r.cuisine)} · ${esc(r.neighborhood)} · ${esc(r.cross_street)} · ${distanceLabel(r.distance_m)}${r.hours_today ? ` · ${esc(r.hours_today)}` : ""}</p>
+        <p class="detail-sub">${esc(r.cuisine)}${r.neighborhood ? ` · ${esc(r.neighborhood)}` : ""} · ${esc(r.cross_street)} · ${distanceLabel(r.distance_m)}${r.hours_today ? ` · ${esc(r.hours_today)}` : ""}</p>
       </div>
       ${scored.length
         ? `<p class="section-note">${scored.length} dishes have enough mentions to score, ranked by how often they come up.</p>${grid(dishes, { hideWhere: true })}`
@@ -335,9 +296,9 @@ function viewRestaurant(id) {
 
 /* --- dish modal ---------------------------------------------------------- */
 
-function openDish(id) {
-  const { dish: d, quotes, also_at } = getDish(id);
-  const r = DB.byRest[d.restaurant_id];
+async function openDish(id) {
+  const { dish: d, quotes, also_at } = await getDish(id);
+  const r = d.restaurant;
   const thin = d.mention_count < THRESHOLD;
   const elsewhere = also_at.filter((x) => x.id !== d.id);
 
@@ -391,7 +352,7 @@ function openDish(id) {
             <div class="block-title">This dish elsewhere</div>
             <div class="alsoat">
               ${also_at.map((x) => {
-                const xr = DB.byRest[x.restaurant_id];
+                const xr = x.restaurant;
                 const isThis = x.id === d.id;
                 return `<button class="alsoat-row ${isThis ? "is-this" : ""}" data-dish="${x.id}">
                   <span class="alsoat-pct" style="color:var(--${sentimentVar(x.sentiment.label)})">${x.sentiment.score}%</span>
@@ -413,14 +374,29 @@ function closeDish() { $("#modal-root").innerHTML = ""; }
 
 /* --- routing + events ---------------------------------------------------- */
 
-function go(view, arg) {
+// Views are async now, so every navigation is too. Failures surface in the view
+// rather than as a silent unhandled rejection with a blank page.
+async function go(view, arg) {
   window.__forceType = null;
   closeDish();
   $("#loc-name").textContent = activeLocation().name;
-  if (view === "results") viewResults(arg);
-  else if (view === "restaurant") viewRestaurant(arg);
-  else viewHome();
+  try {
+    if (view === "results") await viewResults(arg);
+    else if (view === "restaurant") await viewRestaurant(arg);
+    else await viewHome();
+  } catch (err) {
+    showError(err);
+  }
   window.scrollTo(0, 0);
+}
+
+function showError(err) {
+  $("#view").innerHTML = `<div class="wrap"><div class="empty">
+    <h3>Couldn't reach the API</h3>
+    <p>${esc(err.message || String(err))}</p>
+    <p class="section-note">Start it with <code>uv run uvicorn app.main:app --app-dir backend</code>,
+    which serves this page and the API together.</p>
+  </div></div>`;
 }
 
 document.addEventListener("submit", (e) => {
@@ -438,18 +414,18 @@ document.addEventListener("click", (e) => {
   if (chip) { go("results", chip.dataset.q); return; }
 
   const dish = t.closest("[data-dish]");
-  if (dish) { openDish(dish.dataset.dish); return; }
+  if (dish) { openDish(dish.dataset.dish).catch(showError); return; }
 
   const rest = t.closest("[data-rest]");
   if (rest) { go("restaurant", rest.dataset.rest); return; }
 
   const tab = t.closest("[data-tab]");
-  if (tab) { activeTab = tab.dataset.tab; viewHome(); return; }
+  if (tab) { activeTab = tab.dataset.tab; viewHome().catch(showError); return; }
 
   const force = t.closest("[data-force]");
   if (force) {
     window.__forceType = force.dataset.force;
-    viewResults($("#head-q").value.trim());
+    viewResults($("#head-q").value.trim()).catch(showError);
     return;
   }
 
@@ -475,18 +451,4 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDish(
 
 /* --- boot ---------------------------------------------------------------- */
 
-function boot(data) {
-  DB = data;
-  THRESHOLD = data._threshold || 5;
-  DB.byRest = Object.fromEntries(DB.restaurants.map((r) => [r.id, r]));
-  go("home");
-}
-
-if (window.__FIXTURES__) {
-  boot(window.__FIXTURES__);
-} else {
-  fetch("fixtures.json").then((r) => r.json()).then(boot).catch(() => {
-    $("#view").innerHTML = `<div class="wrap"><div class="empty"><h3>Could not load fixtures.json</h3>
-      <p>Serve this directory over HTTP rather than opening the file directly — <code>python3 -m http.server</code> from <code>frontend/</code> is enough.</p></div></div>`;
-  });
-}
+go("home");
